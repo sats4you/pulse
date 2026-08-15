@@ -1,0 +1,35 @@
+{
+  "name": "sats4you/pulse",
+  "description": "Privacy-friendly group coordination without participant accounts or lists.",
+  "type": "project",
+  "license": "AGPL-3.0-only",
+  "require": {
+    "php": "^8.2",
+    "ext-json": "*",
+    "ext-pdo": "*",
+    "ext-pdo_mysql": "*",
+    "slim/psr7": "^1.7",
+    "slim/slim": "^4.15.2",
+    "symfony/translation": "^7.4"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^11.5"
+  },
+  "autoload": {
+    "psr-4": {
+      "Sats4you\\Pulse\\": "app/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Sats4you\\Pulse\\Tests\\": "tests/"
+    }
+  },
+  "scripts": {
+    "test": "phpunit --colors=always"
+  },
+  "config": {
+    "allow-plugins": {},
+    "sort-packages": true
+  }
+}

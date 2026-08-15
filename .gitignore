@@ -11,6 +11,7 @@
 /dist/
 /coverage/
 /.phpunit.cache/
+/.runtime/
 
 # Runtime data and logs
 /var/

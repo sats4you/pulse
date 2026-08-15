@@ -8,13 +8,18 @@ The first closed pilot is intended for **Bern Monthly Bitcoin Meetup**.
 
 ## Current status
 
-This repository is being prepared privately. It currently contains project governance and security documentation, but **no production-ready application**.
+This private repository now contains a tested vertical implementation slice. It is **not yet a production-ready application**.
 
-- closed pilot in preparation;
+- closed pilot implementation started on 15 August 2026;
+- participant access, upcoming-event view, anonymous RSVP and withdrawal are implemented;
+- secret administration access and event creation, editing, scheduling, publication, cancellation, duplication and RSVP closure are implemented;
+- the four-language technical privacy explanation and the primary-data retention job are implemented;
+- automated checks currently cover the core HTTP, authorisation, event, RSVP, CSRF, translation and retention rules;
 - not independently audited;
 - not yet deployed;
 - not yet open for other groups;
-- no real access links, secrets or participant data belong in this repository.
+- no real access links, secrets or participant data belong in this repository;
+- persistent hosting is not approved until the backup-retention conflict is resolved.
 
 The repository will only be made public after the implementation, privacy information, self-hosting guide and release checks match the version actually operated on sats4you.ch.
 
@@ -27,7 +32,17 @@ The repository will only be made public after the implementation, privacy inform
 - event-specific RSVP secrets that do not create a cross-event participant profile;
 - clear limits instead of absolute anonymity or security promises;
 - minimal data, documented deletion and no advertising analytics;
-- server-generated calendar files without calendar-account access.
+- no calendar integration in the pilot; it may be reconsidered if users request it.
+- complete user interface in Deutsch, Français, Italiano and Rumantsch Grischun, with full language names in the selector.
+
+## Local verification
+
+```text
+composer install
+composer test
+```
+
+The production web root must point to `public/`. Database configuration and cryptographic keys are supplied through environment variables; no real secret belongs in the repository. See [Operations](docs/OPERATIONS.md).
 
 ## Documentation
 
@@ -40,6 +55,8 @@ Repository policies:
 - [Contributing](CONTRIBUTING.md)
 - [Copyright and licensing notice](NOTICE)
 - [GNU AGPL version 3](LICENSE)
+- [Architecture](docs/ARCHITECTURE.md)
+- [Operations](docs/OPERATIONS.md)
 
 ## Licence
 
