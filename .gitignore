@@ -1,0 +1,33 @@
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+*.local
+
+# Dependencies and generated output
+/vendor/
+/node_modules/
+/build/
+/dist/
+/coverage/
+/.phpunit.cache/
+
+# Runtime data and logs
+/var/
+*.log
+*.sqlite
+*.sqlite3
+
+# Editors and operating systems
+/.idea/
+/.vscode/
+.DS_Store
+Thumbs.db
+
+# Credentials and keys
+*.pem
+*.key
+*.p12
+*.pfx
+credentials.json
+secrets.*

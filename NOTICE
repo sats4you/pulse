@@ -1,0 +1,16 @@
+pulse
+Copyright © 2026 Andreas Kuoni
+
+The original application code, technical scripts, migrations and tests in
+this project are made available under the GNU Affero General Public License
+version 3 only (AGPL-3.0-only). The complete licence text is in LICENSE.
+
+Third-party libraries and content remain subject to their respective
+licences and copyright notices.
+
+The software licence grants no rights to the names sats4you.ch and pulse,
+the sats4you.ch logo or other assets identified as brand assets. See
+TRADEMARKS.md for details.
+
+Production data, access links, credentials and secrets are not part of the
+published software.
