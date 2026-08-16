@@ -276,7 +276,8 @@ summary { cursor: pointer; font-weight: 700; }
 .editor h2 { margin: 0 0 16px; font-size: 1.2rem; }
 .editor label { display: grid; gap: 7px; margin-top: 13px; color: var(--muted); font-size: .86rem; font-weight: 700; }
 .editor input,
-.editor textarea {
+.editor textarea,
+.editor select {
   width: 100%;
   min-height: 46px;
   padding: 10px 12px;
@@ -289,9 +290,16 @@ summary { cursor: pointer; font-weight: 700; }
 .editor textarea { min-height: 92px; resize: vertical; }
 .editor input:focus-visible,
 .editor textarea:focus-visible,
+.editor select:focus-visible,
 .new-event:focus-visible,
 .link-button:focus-visible { outline: 3px solid var(--text); outline-offset: 3px; }
 .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.date-time-field { min-width: 0; margin: 13px 0 0; padding: 0; border: 0; }
+.date-time-field legend { padding: 0; color: var(--muted); font-size: .86rem; font-weight: 700; }
+.date-time-inputs { display: grid; grid-template-columns: minmax(125px, 2fr) minmax(62px, .7fr) minmax(62px, .7fr); gap: 8px; }
+.date-time-inputs label { min-width: 0; margin-top: 7px; }
+.date-time-inputs label span { font-size: .72rem; font-weight: 400; }
+.date-time-inputs select { max-width: none; padding-right: 26px; }
 .field-help { margin: 7px 0 0; color: #9c9282; font-size: .78rem; }
 .form-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 18px; }
 .form-actions .secondary,

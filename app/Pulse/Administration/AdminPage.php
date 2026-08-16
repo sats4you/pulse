@@ -81,7 +81,7 @@ final class AdminPage
                 <meta name="robots" content="noindex,nofollow,noarchive">
                 <title>{$t('admin.heading')} · pulse</title>
                 <link rel="icon" href="/assets/sats4you-favicon.svg" type="image/svg+xml">
-                <link rel="stylesheet" href="/assets/pulse.css?v=20260816-mobile1">
+                <link rel="stylesheet" href="/assets/pulse.css?v=20260816-controls1">
             </head>
             <body>
                 <main class="shell admin-shell">
@@ -108,7 +108,7 @@ final class AdminPage
                     <aside class="privacy-admin">{$t('admin.privacy_notice')} <a href="/pulse/privacy?lang={$e($locale)}">{$t('privacy.link')}</a></aside>
                     <p class="footnote">{$t('pilot.label')} · {$t('admin.secret_notice')}</p>
                 </main>
-                <script src="/assets/participant-page.js?v=20260816-rsvp2" defer></script>
+                <script src="/assets/participant-page.js?v=20260816-controls1" defer></script>
             </body>
             </html>
             HTML;
@@ -128,11 +128,35 @@ final class AdminPage
             $action .= '/' . rawurlencode($event->publicId);
         }
         $title = $event?->details->title ?? '';
-        $startsAt = $this->inputDate($event?->details->timing->startsAt);
-        $endsAt = $this->inputDate($event?->details->timing->endsAt);
+        $startsAtFields = $this->dateTimeFields(
+            $translator,
+            'starts_at',
+            'admin.field_start',
+            $event?->details->timing->startsAt,
+            false,
+            18,
+            30,
+        );
+        $endsAtFields = $this->dateTimeFields(
+            $translator,
+            'ends_at',
+            'admin.field_end',
+            $event?->details->timing->endsAt,
+            true,
+            21,
+            0,
+        );
         $location = $event?->details->location ?? '';
         $note = $event?->details->note ?? '';
-        $publishAt = $this->inputDate($event?->publishAt);
+        $publishAtFields = $this->dateTimeFields(
+            $translator,
+            'publish_at',
+            'admin.field_publish_at',
+            $event?->publishAt,
+            true,
+            12,
+            0,
+        );
         $heading = $event === null ? $t('admin.form_new') : $t('admin.form_edit');
         $saveLabel = $event === null ? $t('admin.save_draft') : $t('admin.save_changes');
         $canPublish = $event === null
@@ -159,13 +183,13 @@ final class AdminPage
                     <input type="hidden" name="lang" value="{$e($locale)}">
                     <label>{$t('admin.field_title')}<input name="title" maxlength="180" required value="{$e($title)}"></label>
                     <div class="form-grid">
-                        <label>{$t('admin.field_start')}<input type="datetime-local" name="starts_at" step="900" required value="{$e($startsAt)}"></label>
-                        <label>{$t('admin.field_end')}<input type="datetime-local" name="ends_at" step="900" value="{$e($endsAt)}"></label>
+                        {$startsAtFields}
+                        {$endsAtFields}
                     </div>
                     <p class="field-help">{$t('admin.time_step_help')}</p>
                     <label>{$t('admin.field_location')}<input name="location" maxlength="240" value="{$e($location)}"></label>
                     <label>{$t('admin.field_note')}<textarea name="note" maxlength="1000" rows="3">{$e($note)}</textarea></label>
-                    <label>{$t('admin.field_publish_at')}<input type="datetime-local" name="publish_at" step="900" value="{$e($publishAt)}"></label>
+                    {$publishAtFields}
                     <p class="field-help">{$t('admin.publish_help')}</p>
                     <div class="form-actions">
                         <button class="secondary" name="intent" value="save" type="submit">{$saveLabel}</button>
@@ -284,9 +308,52 @@ final class AdminPage
         );
     }
 
-    private function inputDate(?DateTimeImmutable $date): string
+    private function dateTimeFields(
+        TranslatorInterface $translator,
+        string $name,
+        string $legendKey,
+        ?DateTimeImmutable $date,
+        bool $optional,
+        int $defaultHour,
+        int $defaultMinute,
+    ): string
     {
-        return $date?->setTimezone(new DateTimeZone('Europe/Zurich'))->format('Y-m-d\TH:i') ?? '';
+        $e = static fn (string $value): string => htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+        $t = static fn (string $key): string => htmlspecialchars(
+            $translator->trans($key),
+            ENT_QUOTES | ENT_SUBSTITUTE,
+            'UTF-8',
+        );
+        $local = $date?->setTimezone(new DateTimeZone('Europe/Zurich'));
+        $dateValue = $local?->format('Y-m-d') ?? '';
+        $hour = $local === null ? $defaultHour : (int) $local->format('H');
+        $minute = $local === null ? $defaultMinute : (int) $local->format('i');
+        $hourOptions = '';
+        foreach (range(0, 23) as $candidate) {
+            $value = sprintf('%02d', $candidate);
+            $hourOptions .= '<option value="' . $value . '"' . ($candidate === $hour ? ' selected' : '') . '>' . $value . '</option>';
+        }
+        $minuteOptions = '';
+        foreach ([0, 15, 30, 45] as $candidate) {
+            $value = sprintf('%02d', $candidate);
+            $minuteOptions .= '<option value="' . $value . '"' . ($candidate === $minute ? ' selected' : '') . '>' . $value . '</option>';
+        }
+        $required = $optional ? '' : ' required';
+
+        return sprintf(
+            '<fieldset class="date-time-field"><legend>%s</legend><div class="date-time-inputs"><label><span>%s</span><input type="date" name="%s_date" value="%s"%s></label><label><span>%s</span><select name="%s_hour">%s</select></label><label><span>%s</span><select name="%s_minute">%s</select></label></div></fieldset>',
+            $t($legendKey),
+            $t('admin.field_date'),
+            $e($name),
+            $e($dateValue),
+            $required,
+            $t('admin.field_hour'),
+            $e($name),
+            $hourOptions,
+            $t('admin.field_minute'),
+            $e($name),
+            $minuteOptions,
+        );
     }
 
     private function formatDate(DateTimeImmutable $date, string $locale): string

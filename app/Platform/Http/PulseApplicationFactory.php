@@ -466,7 +466,7 @@ final readonly class PulseApplicationFactory
                 $grant,
                 $details,
                 $state,
-                $state === PublicationState::Scheduled ? $this->formDate((string) ($body['publish_at'] ?? '')) : null,
+                $state === PublicationState::Scheduled ? $this->formDateFromBody($body, 'publish_at') : null,
                 $now,
             );
         } catch (InvalidArgumentException $error) {
@@ -506,7 +506,7 @@ final readonly class PulseApplicationFactory
                 'schedule' => $this->adminEvents->schedule(
                     $grant,
                     $eventId,
-                    $this->formDate((string) ($body['publish_at'] ?? '')),
+                    $this->formDateFromBody($body, 'publish_at'),
                     $now,
                 ),
                 'cancel' => $this->adminEvents->cancel($grant, $eventId, $now),
@@ -618,8 +618,8 @@ final readonly class PulseApplicationFactory
     {
         return new EventDetails(
             (string) ($body['title'] ?? ''),
-            $this->formDate((string) ($body['starts_at'] ?? '')),
-            ($body['ends_at'] ?? '') === '' ? null : $this->formDate((string) $body['ends_at']),
+            $this->formDateFromBody($body, 'starts_at'),
+            $this->formDateFromBody($body, 'ends_at', true),
             isset($body['location']) ? (string) $body['location'] : null,
             isset($body['note']) ? (string) $body['note'] : null,
         );
@@ -637,6 +637,33 @@ final readonly class PulseApplicationFactory
         }
 
         return $date;
+    }
+
+    /** @param array<string, mixed> $body */
+    private function formDateFromBody(array $body, string $name, bool $optional = false): ?DateTimeImmutable
+    {
+        if (array_key_exists($name, $body)) {
+            $legacyValue = (string) $body[$name];
+            if ($optional && $legacyValue === '') {
+                return null;
+            }
+
+            return $this->formDate($legacyValue);
+        }
+
+        $date = trim((string) ($body[$name . '_date'] ?? ''));
+        if ($date === '' && $optional) {
+            return null;
+        }
+        $hour = (string) ($body[$name . '_hour'] ?? '');
+        $minute = (string) ($body[$name . '_minute'] ?? '');
+        if (preg_match('/^(?:[01][0-9]|2[0-3])$/', $hour) !== 1
+            || !in_array($minute, ['00', '15', '30', '45'], true)
+        ) {
+            throw new InvalidArgumentException('Time must use 15-minute increments.');
+        }
+
+        return $this->formDate($date . 'T' . $hour . ':' . $minute);
     }
 
     private function invalidEventNotice(InvalidArgumentException $error): string

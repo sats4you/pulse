@@ -11,8 +11,18 @@
 
   document.querySelectorAll('form[data-event-form]').forEach((form) => {
     form.addEventListener('submit', (event) => {
-      const start = form.elements.starts_at?.value || '';
-      const end = form.elements.ends_at?.value || '';
+      const valueFor = (name) => {
+        const legacy = form.elements[name]?.value || '';
+        if (legacy) {
+          return legacy;
+        }
+        const date = form.elements[name + '_date']?.value || '';
+        const hour = form.elements[name + '_hour']?.value || '';
+        const minute = form.elements[name + '_minute']?.value || '';
+        return date ? date + 'T' + hour + ':' + minute : '';
+      };
+      const start = valueFor('starts_at');
+      const end = valueFor('ends_at');
       if (start && end && end <= start) {
         event.preventDefault();
         window.alert(form.dataset.timingError);

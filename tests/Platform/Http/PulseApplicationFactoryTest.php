@@ -130,7 +130,13 @@ final class PulseApplicationFactoryTest extends TestCase
         self::assertSame(200, $page->getStatusCode());
         self::assertStringContainsString('Neuen Termin erfassen', (string) $page->getBody());
         self::assertStringContainsString('data-event-form', (string) $page->getBody());
-        self::assertStringContainsString('name="starts_at" step="900"', (string) $page->getBody());
+        self::assertStringNotContainsString('type="datetime-local"', (string) $page->getBody());
+        self::assertStringContainsString('name="starts_at_date"', (string) $page->getBody());
+        preg_match('/<select name="starts_at_minute">(.*?)<\/select>/s', (string) $page->getBody(), $minuteSelect);
+        self::assertSame(4, substr_count($minuteSelect[1] ?? '', '<option'));
+        foreach (['00', '15', '30', '45'] as $minute) {
+            self::assertStringContainsString('value="' . $minute . '"', $minuteSelect[1] ?? '');
+        }
         preg_match('/name="csrf" value="([^"]+)"/', (string) $page->getBody(), $matches);
         self::assertNotEmpty($matches[1] ?? null);
 
@@ -140,17 +146,26 @@ final class PulseApplicationFactoryTest extends TestCase
             'lang' => 'de',
             'intent' => 'publish',
             'title' => 'September-Treffen',
-            'starts_at' => $eventStart->format('Y-m-d\TH:i'),
-            'ends_at' => '',
+            'starts_at_date' => $eventStart->format('Y-m-d'),
+            'starts_at_hour' => '18',
+            'starts_at_minute' => '30',
+            'ends_at_date' => '',
+            'ends_at_hour' => '21',
+            'ends_at_minute' => '00',
             'location' => 'Restaurant in Bern',
             'note' => '',
-            'publish_at' => '',
+            'publish_at_date' => '',
+            'publish_at_hour' => '12',
+            'publish_at_minute' => '00',
         ];
+        $invalidEnd = $eventStart->modify('-1 hour');
         $invalidTiming = $app->handle(
             $requests->createServerRequest('POST', '/pulse/manage/r/' . self::SLUG . '/events')
                 ->withHeader('Origin', self::ORIGIN)
                 ->withParsedBody(array_merge($createBody, [
-                    'ends_at' => $eventStart->modify('-1 hour')->format('Y-m-d\TH:i'),
+                    'ends_at_date' => $invalidEnd->format('Y-m-d'),
+                    'ends_at_hour' => $invalidEnd->format('H'),
+                    'ends_at_minute' => $invalidEnd->format('i'),
                 ]))
                 ->withCookieParams(['pulse_admin' => $adminCookie]),
         );
@@ -162,7 +177,7 @@ final class PulseApplicationFactoryTest extends TestCase
             $requests->createServerRequest('POST', '/pulse/manage/r/' . self::SLUG . '/events')
                 ->withHeader('Origin', self::ORIGIN)
                 ->withParsedBody(array_merge($createBody, [
-                    'starts_at' => $eventStart->setTime(18, 7)->format('Y-m-d\TH:i'),
+                    'starts_at_minute' => '07',
                 ]))
                 ->withCookieParams(['pulse_admin' => $adminCookie]),
         );
@@ -253,10 +268,9 @@ final class PulseApplicationFactoryTest extends TestCase
         $scheduledBody = array_merge($createBody, [
             'intent' => 'schedule',
             'title' => 'Geplante Veröffentlichung',
-            'starts_at' => $eventStart->modify('+30 days')->format('Y-m-d\TH:i'),
-            'publish_at' => (new DateTimeImmutable('+1 day', new DateTimeZone('Europe/Zurich')))
-                ->setTime(12, 0)
-                ->format('Y-m-d\TH:i'),
+            'starts_at_date' => $eventStart->modify('+30 days')->format('Y-m-d'),
+            'publish_at_date' => (new DateTimeImmutable('+1 day', new DateTimeZone('Europe/Zurich')))
+                ->format('Y-m-d'),
         ]);
         $scheduledCreate = $app->handle(
             $requests->createServerRequest('POST', '/pulse/manage/r/' . self::SLUG . '/events')
