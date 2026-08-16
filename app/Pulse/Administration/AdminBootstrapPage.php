@@ -46,14 +46,15 @@ final class AdminBootstrapPage
                 <meta name="viewport" content="width=device-width, initial-scale=1">
                 <meta name="robots" content="noindex,nofollow,noarchive">
                 <title>{$t('admin.access_heading')} · pulse</title>
-                <link rel="stylesheet" href="/assets/pulse.css">
+                <link rel="icon" href="/assets/sats4you-favicon.svg" type="image/svg+xml">
+                <link rel="stylesheet" href="/assets/pulse.css?v=20260816-ci1">
             </head>
             <body>
                 <main class="shell" id="pulse-app" data-pulse-config="{$configAttribute}">
                     <header class="brandbar">
                         <a class="brand" href="/pulse" aria-label="sats4you.ch">
-                            <span class="brandmark" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
-                            <span>sats4you.ch</span>
+                            <img class="brand-symbol" src="/assets/sats4you-mark.svg" alt="">
+                            <span class="brand-word">sats<span class="brand-four">4</span>you<span class="brand-tld">.ch</span></span>
                         </a>
                         <span class="pilot">{$t('pilot.label')}</span>
                     </header>

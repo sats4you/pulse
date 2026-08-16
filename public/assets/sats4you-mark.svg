@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" role="img" aria-labelledby="title">
+  <title id="title">sats4you.ch Bildmarke – Vier Sats</title>
+  <g fill="#F28C28">
+    <rect x="19" y="2" width="10" height="17" rx="5"/>
+    <rect x="29" y="19" width="17" height="10" rx="5"/>
+    <rect x="19" y="29" width="10" height="17" rx="5"/>
+    <rect x="2" y="19" width="17" height="10" rx="5"/>
+  </g>
+</svg>
