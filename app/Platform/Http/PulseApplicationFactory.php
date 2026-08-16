@@ -558,17 +558,34 @@ final readonly class PulseApplicationFactory
             $request->getHeaderLine('Origin'),
             $request->getHeaderLine('Sec-Fetch-Site'),
         )) {
+            $this->logAdministratorDenial('origin check failed');
             return null;
         }
         $cookie = (string) ($request->getCookieParams()['pulse_admin'] ?? '');
+        if ($cookie === '') {
+            $this->logAdministratorDenial('session cookie missing');
+            return null;
+        }
         $body = $request->getParsedBody();
         $csrf = is_array($body) ? (string) ($body['csrf'] ?? '') : '';
         if (!$this->csrfToken->isValid($csrf, $cookie, $slug)) {
+            $this->logAdministratorDenial('CSRF check failed');
             return null;
         }
         $grant = $this->accessExchange->validateAdministrator($cookie, $slug, new DateTimeImmutable());
 
+        if ($grant === null) {
+            $this->logAdministratorDenial('session invalid or expired');
+        }
+
         return $grant === null ? null : [$grant, $slug];
+    }
+
+    private function logAdministratorDenial(string $reason): void
+    {
+        if (PHP_SAPI !== 'cli') {
+            error_log('[pulse] Administrator mutation denied: ' . $reason . '.');
+        }
     }
 
     /** @param array<string, mixed> $body */
