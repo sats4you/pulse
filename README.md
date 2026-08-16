@@ -13,6 +13,7 @@ This private repository now contains a tested vertical implementation slice. It 
 - closed pilot implementation started on 15 August 2026;
 - participant access, upcoming-event view, anonymous RSVP and withdrawal are implemented;
 - secret administration access and event creation, editing, scheduling, publication, cancellation, duplication and RSVP closure are implemented;
+- recovery-code rotation, participant-link rotation and one-time round provisioning are implemented;
 - the four-language technical privacy explanation and the primary-data retention job are implemented;
 - automated checks currently cover the core HTTP, authorisation, event, RSVP, CSRF, translation and retention rules;
 - not independently audited;
@@ -40,6 +41,12 @@ The repository will only be made public after the implementation, privacy inform
 ```text
 composer install
 composer test
+```
+
+After applying the database migration, the first round is provisioned once from the command line. The command prints the participant link, administration link and recovery code only once:
+
+```text
+php bin/provision-round.php bern-bitcoin "Bern Monthly Bitcoin Meetup"
 ```
 
 The production web root must point to `public/`. Database configuration and cryptographic keys are supplied through environment variables; no real secret belongs in the repository. See [Operations](docs/OPERATIONS.md).

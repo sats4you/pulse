@@ -14,8 +14,10 @@ final class InMemoryRoundAccessStore implements RoundAccessStore
     public string $roundId = '0123456789abcdef0123456789abcdef';
     public string $participantDigest = '';
     public string $administratorDigest = '';
+    public string $recoveryDigest = '';
     public int $participantVersion = 1;
     public int $administratorVersion = 1;
+    public int $recoveryVersion = 1;
 
     public function findParticipantGrant(string $publicSlug, string $presentedDigest): ?AccessGrant
     {
@@ -35,6 +37,15 @@ final class InMemoryRoundAccessStore implements RoundAccessStore
         return new AccessGrant($this->roundId, AccessRole::Administrator, $this->administratorVersion);
     }
 
+    public function findRecoveryGrant(string $publicSlug, string $presentedDigest): ?AccessGrant
+    {
+        if ($publicSlug !== $this->slug || !hash_equals($this->recoveryDigest, $presentedDigest)) {
+            return null;
+        }
+
+        return new AccessGrant($this->roundId, AccessRole::Recovery, $this->recoveryVersion);
+    }
+
     public function isCurrent(AccessGrant $grant, string $publicSlug): bool
     {
         return $publicSlug === $this->slug
@@ -42,7 +53,7 @@ final class InMemoryRoundAccessStore implements RoundAccessStore
             && $grant->accessVersion === match ($grant->role) {
                 AccessRole::Participant => $this->participantVersion,
                 AccessRole::Administrator => $this->administratorVersion,
-                AccessRole::Recovery => -1,
+                AccessRole::Recovery => $this->recoveryVersion,
             };
     }
 }

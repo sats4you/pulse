@@ -17,6 +17,18 @@ The required variables are documented in `.env.example`. `APP_HMAC_KEY` must con
 
 The web server must use HTTPS in production. The application then marks access and RSVP cookies as `Secure`, `HttpOnly` and `SameSite=Strict`.
 
+## Einmalige Einrichtung der Pilotgruppe
+
+Nach der Migration wird die Runde genau einmal über die Kommandozeile angelegt:
+
+```text
+php bin/provision-round.php bern-bitcoin "Bern Monthly Bitcoin Meetup"
+```
+
+Das Kommando erzeugt unabhängig voneinander Teilnehmer-, Verwaltungs- und Wiederherstellungsgeheimnis. Es speichert nur deren HMAC-Prüfwerte und zeigt die lesbaren Links beziehungsweise den Wiederherstellungscode genau einmal im Terminal an. Teilnehmerlink und Verwaltungslink sind getrennt zu speichern; der Wiederherstellungscode ist zusätzlich offline und getrennt vom Verwaltungslink aufzubewahren. Die Ausgabe darf weder in ein Ticket noch in ein Log, eine Bildschirmaufzeichnung oder das Repository kopiert werden.
+
+Existiert der Slug bereits, verhindert der eindeutige Datenbankindex eine zweite Einrichtung. Ein verlorener Teilnehmerlink kann später aus der Verwaltung ersetzt werden. Nur der aktuelle Wiederherstellungscode kann einen verlorenen Verwaltungslink ersetzen. Bei erfolgreicher Wiederherstellung werden Verwaltungslink und Wiederherstellungscode atomar ersetzt und alle früheren Verwaltungssitzungen ungültig. Sind Verwaltungslink und Wiederherstellungscode verloren, gibt es im Pilot keine Support-Wiederherstellung.
+
 ## Daily primary-data deletion
 
 Run the following command at least once per day with the same database environment as the web application:

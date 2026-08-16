@@ -310,6 +310,23 @@ summary { cursor: pointer; font-weight: 700; }
 .landing-shell { width: min(100% - 32px, 760px); }
 .landing-card { margin-top: 34px; }
 
+.credential-shell { width: min(100% - 32px, 760px); }
+.credential-shell h1 { font-size: clamp(2.2rem, 7vw, 4rem); }
+.credential-form { margin-top: 24px; padding: 18px; border: 1px solid var(--line); border-radius: 20px; background: var(--surface); }
+.confirmation { display: flex; align-items: flex-start; gap: 10px; color: var(--muted); line-height: 1.5; }
+.confirmation input { width: 20px; height: 20px; flex: 0 0 auto; }
+.credential-form .primary-button { margin-top: 18px; }
+.secret-output { margin-top: 18px; padding: 16px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); }
+.secret-output h2 { margin: 0 0 10px; font-size: .9rem; }
+.secret-output div { overflow-wrap: anywhere; color: var(--muted); line-height: 1.5; }
+.secret-output a { color: var(--orange); }
+.secret-output code { color: var(--green); font-size: .9rem; }
+.inline-primary { display: inline-block; }
+.credential-admin { margin-top: 22px; padding: 18px; border: 1px solid var(--line); border-radius: 20px; background: var(--surface); }
+.credential-admin h2 { margin: 0; font-size: 1.15rem; }
+.credential-admin p { color: var(--muted); line-height: 1.5; }
+.credential-admin form { margin-top: 14px; }
+
 [hidden] { display: none !important; }
 
 @media (max-width: 420px) {

@@ -67,4 +67,24 @@ final class AccessExchangeTest extends TestCase
             new DateTimeImmutable('2026-08-15T12:00:00Z'),
         ));
     }
+
+    public function testRecoverySessionExpiresAfterTenMinutesAndIsVersionRevocable(): void
+    {
+        $now = new DateTimeImmutable('2026-08-15T12:00:00Z');
+        $digester = new SecretDigester(str_repeat('h', 32));
+        $store = new InMemoryRoundAccessStore();
+        $store->recoveryDigest = $digester->digest('offline-recovery-secret');
+        $exchange = new AccessExchange($store, $digester, new AccessSessionCodec(str_repeat('s', 32)));
+
+        $cookie = $exchange->exchangeRecovery($store->slug, 'offline-recovery-secret', $now);
+
+        self::assertNotNull($cookie);
+        self::assertNotNull($exchange->validateRecovery($cookie, $store->slug, $now->modify('+9 minutes')));
+        self::assertNull($exchange->validateAdministrator($cookie, $store->slug, $now));
+        self::assertNull($exchange->validateRecovery($cookie, $store->slug, $now->modify('+10 minutes')));
+
+        $cookie = $exchange->exchangeRecovery($store->slug, 'offline-recovery-secret', $now);
+        ++$store->recoveryVersion;
+        self::assertNull($exchange->validateRecovery((string) $cookie, $store->slug, $now));
+    }
 }

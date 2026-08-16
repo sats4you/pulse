@@ -18,6 +18,9 @@ use Sats4you\Pulse\Pulse\Attendance\AttendanceService;
 use Sats4you\Pulse\Pulse\Administration\AdminBootstrapPage;
 use Sats4you\Pulse\Pulse\Administration\AdminEventService;
 use Sats4you\Pulse\Pulse\Administration\AdminPage;
+use Sats4you\Pulse\Pulse\Credentials\CredentialPage;
+use Sats4you\Pulse\Pulse\Credentials\CredentialRotationService;
+use Sats4you\Pulse\Pulse\Credentials\RecoveryBootstrapPage;
 use Sats4you\Pulse\Pulse\Event\EventAccessPolicy;
 use Sats4you\Pulse\Pulse\Event\PublicationState;
 use Sats4you\Pulse\Pulse\PublicAccess\AccessExchange;
@@ -171,6 +174,134 @@ final class PulseApplicationFactoryTest extends TestCase
         self::assertSame(403, $response->getStatusCode());
     }
 
+    public function testRecoveryReplacesBothAdministratorSecretsAndInvalidatesOldSession(): void
+    {
+        [$app, $connection] = $this->application();
+        $requests = new ServerRequestFactory();
+        $oldAdminExchange = $app->handle(
+            $requests->createServerRequest('POST', '/pulse/api/access/admin/' . self::SLUG)
+                ->withParsedBody(['secret' => 'test-admin-secret']),
+        );
+        $oldAdminCookie = $this->cookieValue($oldAdminExchange, 'pulse_admin');
+        $recoveryExchange = $app->handle(
+            $requests->createServerRequest('POST', '/pulse/api/access/recovery/' . self::SLUG)
+                ->withParsedBody(['secret' => 'test-recovery-secret']),
+        );
+        self::assertSame(200, $recoveryExchange->getStatusCode());
+        $recoveryCookie = $this->cookieValue($recoveryExchange, 'pulse_recovery');
+        self::assertStringContainsString('HttpOnly', $recoveryExchange->getHeaderLine('Set-Cookie'));
+        self::assertStringContainsString('SameSite=Strict', $recoveryExchange->getHeaderLine('Set-Cookie'));
+
+        $confirmation = $app->handle(
+            $requests->createServerRequest('GET', '/pulse/recover/r/' . self::SLUG . '/confirm?lang=de')
+                ->withQueryParams(['lang' => 'de'])
+                ->withCookieParams(['pulse_recovery' => $recoveryCookie]),
+        );
+        self::assertSame(200, $confirmation->getStatusCode());
+        preg_match('/name="csrf" value="([^"]+)"/', (string) $confirmation->getBody(), $matches);
+        self::assertNotEmpty($matches[1] ?? null);
+
+        $crossSite = $app->handle(
+            $requests->createServerRequest('POST', '/pulse/recover/r/' . self::SLUG . '/rotate')
+                ->withHeader('Origin', 'https://example.org')
+                ->withParsedBody(['csrf' => $matches[1], 'lang' => 'de', 'confirm' => 'rotate'])
+                ->withCookieParams(['pulse_recovery' => $recoveryCookie]),
+        );
+        self::assertSame(403, $crossSite->getStatusCode());
+
+        $rotation = $app->handle(
+            $requests->createServerRequest('POST', '/pulse/recover/r/' . self::SLUG . '/rotate')
+                ->withHeader('Origin', self::ORIGIN)
+                ->withParsedBody(['csrf' => $matches[1], 'lang' => 'de', 'confirm' => 'rotate'])
+                ->withCookieParams(['pulse_recovery' => $recoveryCookie]),
+        );
+        self::assertSame(200, $rotation->getStatusCode());
+        self::assertStringContainsString('Neue Zugänge sichern', (string) $rotation->getBody());
+        self::assertStringContainsString(self::ORIGIN . '/pulse/manage/r/' . self::SLUG . '#', (string) $rotation->getBody());
+        self::assertStringContainsString('<code>', (string) $rotation->getBody());
+        self::assertCount(2, $rotation->getHeader('Set-Cookie'));
+        $round = $connection->query('SELECT * FROM rounds')->fetch(PDO::FETCH_ASSOC);
+        self::assertSame(2, (int) $round['admin_version']);
+        self::assertSame(2, (int) $round['recovery_version']);
+
+        $oldAdminPage = $app->handle(
+            $requests->createServerRequest('GET', '/pulse/manage/r/' . self::SLUG . '/events')
+                ->withCookieParams(['pulse_admin' => $oldAdminCookie]),
+        );
+        self::assertSame(403, $oldAdminPage->getStatusCode());
+        self::assertSame(403, $app->handle(
+            $requests->createServerRequest('POST', '/pulse/api/access/admin/' . self::SLUG)
+                ->withParsedBody(['secret' => 'test-admin-secret']),
+        )->getStatusCode());
+        self::assertSame(403, $app->handle(
+            $requests->createServerRequest('POST', '/pulse/api/access/recovery/' . self::SLUG)
+                ->withParsedBody(['secret' => 'test-recovery-secret']),
+        )->getStatusCode());
+        $reusedRecovery = $app->handle(
+            $requests->createServerRequest('POST', '/pulse/recover/r/' . self::SLUG . '/rotate')
+                ->withHeader('Origin', self::ORIGIN)
+                ->withParsedBody(['csrf' => $matches[1], 'lang' => 'de', 'confirm' => 'rotate'])
+                ->withCookieParams(['pulse_recovery' => $recoveryCookie]),
+        );
+        self::assertSame(403, $reusedRecovery->getStatusCode());
+    }
+
+    public function testAdministratorCanRotateParticipantLinkWithoutChangingRsvps(): void
+    {
+        [$app, $connection] = $this->application();
+        $requests = new ServerRequestFactory();
+        $participantExchange = $app->handle(
+            $requests->createServerRequest('POST', '/pulse/api/access/participant/' . self::SLUG)
+                ->withParsedBody(['secret' => 'test-participant-secret']),
+        );
+        $oldParticipantCookie = $this->cookieValue($participantExchange, 'pulse_access');
+        $adminExchange = $app->handle(
+            $requests->createServerRequest('POST', '/pulse/api/access/admin/' . self::SLUG)
+                ->withParsedBody(['secret' => 'test-admin-secret']),
+        );
+        $adminCookie = $this->cookieValue($adminExchange, 'pulse_admin');
+        $adminPage = $app->handle(
+            $requests->createServerRequest('GET', '/pulse/manage/r/' . self::SLUG . '/events?lang=de')
+                ->withQueryParams(['lang' => 'de'])
+                ->withCookieParams(['pulse_admin' => $adminCookie]),
+        );
+        preg_match('/name="csrf" value="([^"]+)"/', (string) $adminPage->getBody(), $matches);
+
+        $withoutConfirmation = $app->handle(
+            $requests->createServerRequest('POST', '/pulse/manage/r/' . self::SLUG . '/participant-link/rotate')
+                ->withHeader('Origin', self::ORIGIN)
+                ->withParsedBody(['csrf' => $matches[1], 'lang' => 'de'])
+                ->withCookieParams(['pulse_admin' => $adminCookie]),
+        );
+        self::assertSame(403, $withoutConfirmation->getStatusCode());
+
+        $rotation = $app->handle(
+            $requests->createServerRequest('POST', '/pulse/manage/r/' . self::SLUG . '/participant-link/rotate')
+                ->withHeader('Origin', self::ORIGIN)
+                ->withParsedBody(['csrf' => $matches[1], 'lang' => 'de', 'confirm' => 'rotate'])
+                ->withCookieParams(['pulse_admin' => $adminCookie]),
+        );
+        self::assertSame(200, $rotation->getStatusCode());
+        self::assertStringContainsString('Neuer Teilnehmerlink', (string) $rotation->getBody());
+        self::assertStringContainsString(self::ORIGIN . '/pulse/r/' . self::SLUG . '#', (string) $rotation->getBody());
+        self::assertSame(4, $this->attendanceCount($connection));
+
+        $oldParticipantPage = $app->handle(
+            $requests->createServerRequest('GET', '/pulse/r/' . self::SLUG . '/events')
+                ->withCookieParams(['pulse_access' => $oldParticipantCookie]),
+        );
+        self::assertSame(403, $oldParticipantPage->getStatusCode());
+        self::assertSame(403, $app->handle(
+            $requests->createServerRequest('POST', '/pulse/api/access/participant/' . self::SLUG)
+                ->withParsedBody(['secret' => 'test-participant-secret']),
+        )->getStatusCode());
+        $currentAdminPage = $app->handle(
+            $requests->createServerRequest('GET', '/pulse/manage/r/' . self::SLUG . '/events')
+                ->withCookieParams(['pulse_admin' => $adminCookie]),
+        );
+        self::assertSame(200, $currentAdminPage->getStatusCode());
+    }
+
     public function testPublicLandingAndPrivacyExplanationNeedNoAccessSecret(): void
     {
         [$app] = $this->application();
@@ -210,17 +341,18 @@ final class PulseApplicationFactoryTest extends TestCase
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
         ]);
-        $connection->exec('CREATE TABLE rounds (id TEXT PRIMARY KEY, slug TEXT UNIQUE, participant_digest BLOB, access_version INTEGER, admin_digest BLOB, admin_version INTEGER)');
+        $connection->exec('CREATE TABLE rounds (id TEXT PRIMARY KEY, slug TEXT UNIQUE, participant_digest BLOB, access_version INTEGER, admin_digest BLOB, admin_version INTEGER, recovery_digest BLOB, recovery_version INTEGER)');
         $connection->exec('CREATE TABLE events (id TEXT PRIMARY KEY, public_id TEXT UNIQUE, round_id TEXT, title TEXT, starts_at TEXT, ends_at TEXT, location TEXT, note TEXT, publication_state TEXT, publish_at TEXT, rsvp_closed_at TEXT, material_changed_at TEXT)');
         $connection->exec('CREATE TABLE attendance (event_id TEXT, digest BLOB, created_at TEXT, delete_at TEXT, UNIQUE(event_id, digest))');
 
         $digester = new SecretDigester(str_repeat('h', 32));
         $now = new DateTimeImmutable('now', new DateTimeZone('UTC'));
-        $round = $connection->prepare('INSERT INTO rounds VALUES (:id, :slug, :digest, 1, :admin_digest, 1)');
+        $round = $connection->prepare('INSERT INTO rounds VALUES (:id, :slug, :digest, 1, :admin_digest, 1, :recovery_digest, 1)');
         $round->bindValue('id', self::ROUND_ID);
         $round->bindValue('slug', self::SLUG);
         $round->bindValue('digest', $digester->digest('test-participant-secret'), PDO::PARAM_LOB);
         $round->bindValue('admin_digest', $digester->digest('test-admin-secret'), PDO::PARAM_LOB);
+        $round->bindValue('recovery_digest', $digester->digest('test-recovery-secret'), PDO::PARAM_LOB);
         $round->execute();
         $connection->prepare('INSERT INTO events VALUES (:id, :public_id, :round_id, :title, :starts_at, NULL, NULL, :note, :state, :publish_at, NULL, NULL)')->execute([
             'id' => self::EVENT_ID,
@@ -255,16 +387,20 @@ final class PulseApplicationFactoryTest extends TestCase
             new AccessExchange($store, $digester, new AccessSessionCodec(str_repeat('s', 32))),
             new ParticipantFlow($store, $store, $attendanceService, $digester),
             new AdminEventService($adminStore, new RetentionSchedule()),
+            new CredentialRotationService($store, new SecretGenerator(), $digester),
             new BootstrapPage(),
             new ParticipantPage($policy),
             new PulseLandingPage(),
             new AdminBootstrapPage(),
             new AdminPage(),
+            new RecoveryBootstrapPage(),
+            new CredentialPage(),
             new PrivacyPage(),
             new SameOriginGuard(self::ORIGIN),
             new CsrfToken(str_repeat('c', 32)),
             dirname(__DIR__, 3) . '/resources/translations',
             'Bern Monthly Bitcoin Meetup',
+            self::ORIGIN,
             true,
         );
 

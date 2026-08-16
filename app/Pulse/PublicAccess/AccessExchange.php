@@ -71,6 +71,33 @@ final readonly class AccessExchange
         return $this->validate($cookie, $publicSlug, AccessRole::Administrator, $now);
     }
 
+    public function exchangeRecovery(
+        string $publicSlug,
+        string $rawSecret,
+        DateTimeImmutable $now,
+    ): ?string {
+        if ($rawSecret === '') {
+            return null;
+        }
+
+        $grant = $this->store->findRecoveryGrant($publicSlug, $this->digester->digest($rawSecret));
+        if ($grant === null) {
+            return null;
+        }
+
+        return $this->sessionCodec->encode(new AccessSession(
+            $grant->roundId,
+            $grant->role,
+            $grant->accessVersion,
+            $now->add(new DateInterval('PT10M')),
+        ));
+    }
+
+    public function validateRecovery(string $cookie, string $publicSlug, DateTimeImmutable $now): ?AccessGrant
+    {
+        return $this->validate($cookie, $publicSlug, AccessRole::Recovery, $now);
+    }
+
     private function validate(
         string $cookie,
         string $publicSlug,

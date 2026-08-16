@@ -22,12 +22,17 @@ final readonly class PdoRoundAccessStore implements RoundAccessStore
         return $this->findGrant($publicSlug, $presentedDigest, AccessRole::Administrator);
     }
 
+    public function findRecoveryGrant(string $publicSlug, string $presentedDigest): ?AccessGrant
+    {
+        return $this->findGrant($publicSlug, $presentedDigest, AccessRole::Recovery);
+    }
+
     private function findGrant(string $publicSlug, string $presentedDigest, AccessRole $role): ?AccessGrant
     {
         [$digestColumn, $versionColumn] = match ($role) {
             AccessRole::Participant => ['participant_access_digest', 'participant_access_version'],
             AccessRole::Administrator => ['admin_access_digest', 'admin_access_version'],
-            AccessRole::Recovery => throw new \InvalidArgumentException('Recovery is not a session grant.'),
+            AccessRole::Recovery => ['admin_recovery_digest', 'admin_recovery_version'],
         };
         $statement = $this->connection->prepare(
             <<<SQL
@@ -55,11 +60,8 @@ final readonly class PdoRoundAccessStore implements RoundAccessStore
         $versionColumn = match ($grant->role) {
             AccessRole::Participant => 'participant_access_version',
             AccessRole::Administrator => 'admin_access_version',
-            AccessRole::Recovery => null,
+            AccessRole::Recovery => 'admin_recovery_version',
         };
-        if ($versionColumn === null) {
-            return false;
-        }
 
         $statement = $this->connection->prepare(
             <<<SQL

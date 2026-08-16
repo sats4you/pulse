@@ -12,6 +12,8 @@ use Sats4you\Pulse\Pulse\Attendance\EventSnapshot;
 use Sats4you\Pulse\Pulse\Administration\AdminEvent;
 use Sats4you\Pulse\Pulse\Administration\AdminEventStore;
 use Sats4you\Pulse\Pulse\Administration\EventDetails;
+use Sats4you\Pulse\Pulse\Credentials\CredentialStore;
+use Sats4you\Pulse\Pulse\Credentials\RoundCredentialSnapshot;
 use Sats4you\Pulse\Pulse\Event\EventTiming;
 use Sats4you\Pulse\Pulse\Event\PublicationState;
 use Sats4you\Pulse\Pulse\PublicAccess\AccessGrant;
@@ -21,7 +23,7 @@ use Sats4you\Pulse\Pulse\PublicAccess\PublishedEventStore;
 use Sats4you\Pulse\Pulse\PublicAccess\RoundAccessStore;
 use Throwable;
 
-final readonly class SqlitePulseStore implements AttendanceStore, PublishedEventStore, RoundAccessStore, AdminEventStore
+final readonly class SqlitePulseStore implements AttendanceStore, PublishedEventStore, RoundAccessStore, AdminEventStore, CredentialStore
 {
     private const FORMAT = 'Y-m-d H:i:s.u';
 
@@ -194,13 +196,88 @@ final readonly class SqlitePulseStore implements AttendanceStore, PublishedEvent
         return new AccessGrant($row['id'], AccessRole::Administrator, (int) $row['admin_version']);
     }
 
+    public function findRecoveryGrant(string $publicSlug, string $presentedDigest): ?AccessGrant
+    {
+        $statement = $this->connection->prepare('SELECT * FROM rounds WHERE slug = :slug');
+        $statement->execute(['slug' => $publicSlug]);
+        $row = $statement->fetch(PDO::FETCH_ASSOC);
+        if ($row === false
+            || !array_key_exists('recovery_digest', $row)
+            || !hash_equals((string) $row['recovery_digest'], $presentedDigest)
+        ) {
+            return null;
+        }
+
+        return new AccessGrant($row['id'], AccessRole::Recovery, (int) $row['recovery_version']);
+    }
+
     public function isCurrent(AccessGrant $grant, string $publicSlug): bool
     {
-        $versionColumn = $grant->role === AccessRole::Administrator ? 'admin_version' : 'access_version';
+        $versionColumn = match ($grant->role) {
+            AccessRole::Participant => 'access_version',
+            AccessRole::Administrator => 'admin_version',
+            AccessRole::Recovery => 'recovery_version',
+        };
         $statement = $this->connection->prepare("SELECT 1 FROM rounds WHERE id = :id AND slug = :slug AND {$versionColumn} = :version");
         $statement->execute(['id' => $grant->roundId, 'slug' => $publicSlug, 'version' => $grant->accessVersion]);
 
         return $statement->fetchColumn() !== false;
+    }
+
+    public function getRoundForUpdate(string $publicSlug): ?RoundCredentialSnapshot
+    {
+        $statement = $this->connection->prepare('SELECT * FROM rounds WHERE slug = :slug');
+        $statement->execute(['slug' => $publicSlug]);
+        $row = $statement->fetch(PDO::FETCH_ASSOC);
+        if ($row === false) {
+            return null;
+        }
+
+        return new RoundCredentialSnapshot(
+            (string) $row['id'],
+            (string) $row['slug'],
+            (int) $row['access_version'],
+            (int) $row['admin_version'],
+            (int) $row['recovery_version'],
+        );
+    }
+
+    public function replaceAdministratorCredentials(
+        RoundCredentialSnapshot $expected,
+        string $administratorDigest,
+        string $recoveryDigest,
+        DateTimeImmutable $rotatedAt,
+    ): bool {
+        $statement = $this->connection->prepare(
+            'UPDATE rounds SET admin_digest = :admin_digest, admin_version = admin_version + 1, recovery_digest = :recovery_digest, recovery_version = recovery_version + 1 WHERE id = :id AND slug = :slug AND admin_version = :admin_version AND recovery_version = :recovery_version',
+        );
+        $statement->bindValue('admin_digest', $administratorDigest, PDO::PARAM_LOB);
+        $statement->bindValue('recovery_digest', $recoveryDigest, PDO::PARAM_LOB);
+        $statement->bindValue('id', $expected->roundId);
+        $statement->bindValue('slug', $expected->publicSlug);
+        $statement->bindValue('admin_version', $expected->administratorVersion, PDO::PARAM_INT);
+        $statement->bindValue('recovery_version', $expected->recoveryVersion, PDO::PARAM_INT);
+        $statement->execute();
+
+        return $statement->rowCount() === 1;
+    }
+
+    public function replaceParticipantCredential(
+        RoundCredentialSnapshot $expected,
+        string $participantDigest,
+        DateTimeImmutable $rotatedAt,
+    ): bool {
+        $statement = $this->connection->prepare(
+            'UPDATE rounds SET participant_digest = :participant_digest, access_version = access_version + 1 WHERE id = :id AND slug = :slug AND access_version = :participant_version AND admin_version = :admin_version',
+        );
+        $statement->bindValue('participant_digest', $participantDigest, PDO::PARAM_LOB);
+        $statement->bindValue('id', $expected->roundId);
+        $statement->bindValue('slug', $expected->publicSlug);
+        $statement->bindValue('participant_version', $expected->participantVersion, PDO::PARAM_INT);
+        $statement->bindValue('admin_version', $expected->administratorVersion, PDO::PARAM_INT);
+        $statement->execute();
+
+        return $statement->rowCount() === 1;
     }
 
     /** @param array<string, mixed> $row */

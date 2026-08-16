@@ -16,6 +16,9 @@ use Sats4you\Pulse\Pulse\Administration\AdminBootstrapPage;
 use Sats4you\Pulse\Pulse\Administration\AdminEventService;
 use Sats4you\Pulse\Pulse\Administration\AdminPage;
 use Sats4you\Pulse\Pulse\Administration\EventDetails;
+use Sats4you\Pulse\Pulse\Credentials\CredentialPage;
+use Sats4you\Pulse\Pulse\Credentials\CredentialRotationService;
+use Sats4you\Pulse\Pulse\Credentials\RecoveryBootstrapPage;
 use Sats4you\Pulse\Pulse\Event\PublicationState;
 use Sats4you\Pulse\Pulse\PublicAccess\AccessExchange;
 use Sats4you\Pulse\Pulse\PublicAccess\BootstrapPage;
@@ -39,16 +42,20 @@ final readonly class PulseApplicationFactory
         private AccessExchange $accessExchange,
         private ParticipantFlow $participantFlow,
         private AdminEventService $adminEvents,
+        private CredentialRotationService $credentialRotation,
         private BootstrapPage $bootstrapPage,
         private ParticipantPage $participantPage,
         private PulseLandingPage $landingPage,
         private AdminBootstrapPage $adminBootstrapPage,
         private AdminPage $adminPage,
+        private RecoveryBootstrapPage $recoveryBootstrapPage,
+        private CredentialPage $credentialPage,
         private PrivacyPage $privacyPage,
         private SameOriginGuard $originGuard,
         private CsrfToken $csrfToken,
         private string $translationDirectory,
         private string $groupName,
+        private string $baseUrl,
         private bool $secureCookies,
     ) {
     }
@@ -72,9 +79,14 @@ final readonly class PulseApplicationFactory
             $routes->post('/r/{slug}/events/{event}/withdraw', $this->withdraw(...));
             $routes->get('/manage/r/{slug}', $this->adminBootstrap(...));
             $routes->post('/api/access/admin/{slug}', $this->exchangeAdmin(...));
+            $routes->get('/recover/r/{slug}', $this->recoveryBootstrap(...));
+            $routes->post('/api/access/recovery/{slug}', $this->exchangeRecovery(...));
+            $routes->get('/recover/r/{slug}/confirm', $this->recoveryConfirmation(...));
+            $routes->post('/recover/r/{slug}/rotate', $this->recoverAdministrator(...));
             $routes->get('/manage/r/{slug}/events', $this->adminEventList(...));
             $routes->post('/manage/r/{slug}/events', $this->createAdminEvent(...));
             $routes->post('/manage/r/{slug}/events/{event}', $this->mutateAdminEvent(...));
+            $routes->post('/manage/r/{slug}/participant-link/rotate', $this->rotateParticipantLink(...));
         });
 
         return $app;
@@ -174,6 +186,117 @@ final readonly class PulseApplicationFactory
         ));
 
         return $this->json($response, ['ok' => true]);
+    }
+
+    private function recoveryBootstrap(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
+    {
+        $slug = (string) $args['slug'];
+        $locale = $this->locale($request);
+        $translator = TranslatorFactory::create($locale, $this->translationDirectory);
+        $response->getBody()->write($this->recoveryBootstrapPage->render(
+            $translator,
+            $locale,
+            $slug,
+            '/pulse/api/access/recovery/' . rawurlencode($slug),
+            '/pulse/recover/r/' . rawurlencode($slug) . '/confirm',
+            self::LANGUAGES,
+        ));
+
+        return $response->withHeader('Content-Type', 'text/html; charset=utf-8');
+    }
+
+    private function exchangeRecovery(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
+    {
+        $body = $request->getParsedBody();
+        $secret = is_array($body) ? (string) ($body['secret'] ?? '') : '';
+        $slug = (string) $args['slug'];
+        $now = new DateTimeImmutable();
+        $cookie = $this->accessExchange->exchangeRecovery($slug, $secret, $now);
+        if ($cookie === null) {
+            return $this->json($response, ['ok' => false], 403);
+        }
+
+        $response = $response->withAddedHeader('Set-Cookie', CookieHeader::create(
+            'pulse_recovery',
+            $cookie,
+            '/pulse/recover/r/' . rawurlencode($slug),
+            $now->add(new DateInterval('PT10M')),
+            $this->secureCookies,
+        ));
+
+        return $this->json($response, ['ok' => true]);
+    }
+
+    private function recoveryConfirmation(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
+    {
+        $slug = (string) $args['slug'];
+        $cookie = (string) ($request->getCookieParams()['pulse_recovery'] ?? '');
+        if ($this->accessExchange->validateRecovery($cookie, $slug, new DateTimeImmutable()) === null) {
+            return $response->withStatus(403);
+        }
+
+        $locale = $this->locale($request);
+        $translator = TranslatorFactory::create($locale, $this->translationDirectory);
+        $response->getBody()->write($this->credentialPage->renderRecoveryConfirmation(
+            $translator,
+            $locale,
+            $slug,
+            $this->csrfToken->issue($cookie, 'recovery/' . $slug),
+            self::LANGUAGES,
+        ));
+
+        return $response->withHeader('Content-Type', 'text/html; charset=utf-8');
+    }
+
+    private function recoverAdministrator(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
+    {
+        $slug = (string) $args['slug'];
+        $cookie = (string) ($request->getCookieParams()['pulse_recovery'] ?? '');
+        $body = is_array($request->getParsedBody()) ? $request->getParsedBody() : [];
+        if (!$this->originGuard->allows(
+            $request->getHeaderLine('Origin'),
+            $request->getHeaderLine('Sec-Fetch-Site'),
+        ) || !$this->csrfToken->isValid(
+            (string) ($body['csrf'] ?? ''),
+            $cookie,
+            'recovery/' . $slug,
+        ) || ($body['confirm'] ?? '') !== 'rotate') {
+            return $response->withStatus(403);
+        }
+        $grant = $this->accessExchange->validateRecovery($cookie, $slug, new DateTimeImmutable());
+        if ($grant === null) {
+            return $response->withStatus(403);
+        }
+
+        try {
+            $result = $this->credentialRotation->recoverAdministrator($grant, $slug, new DateTimeImmutable());
+        } catch (DomainException) {
+            return $response->withStatus(409);
+        }
+        $locale = $this->bodyLocale($body);
+        $translator = TranslatorFactory::create($locale, $this->translationDirectory);
+        $administratorLink = $this->baseUrl . '/pulse/manage/r/' . rawurlencode($slug) . '#' . rawurlencode($result->administratorSecret);
+        $recoveryLink = $this->baseUrl . '/pulse/recover/r/' . rawurlencode($slug) . '#' . rawurlencode($result->recoverySecret);
+        $response->getBody()->write($this->credentialPage->renderRecoveryResult(
+            $translator,
+            $locale,
+            $administratorLink,
+            $result->recoverySecret,
+            $recoveryLink,
+            self::LANGUAGES,
+        ));
+        $response = $response->withAddedHeader('Set-Cookie', CookieHeader::expire(
+            'pulse_recovery',
+            '/pulse/recover/r/' . rawurlencode($slug),
+            $this->secureCookies,
+        ));
+        $response = $response->withAddedHeader('Set-Cookie', CookieHeader::expire(
+            'pulse_admin',
+            '/pulse/manage/r/' . rawurlencode($slug),
+            $this->secureCookies,
+        ));
+
+        return $response->withHeader('Content-Type', 'text/html; charset=utf-8');
     }
 
     private function events(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
@@ -392,6 +515,33 @@ final readonly class PulseApplicationFactory
         return $this->redirectToAdmin($request, $response, $slug, 'saved');
     }
 
+    private function rotateParticipantLink(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
+    {
+        $authorisation = $this->adminMutationAuthorisation($request, (string) $args['slug']);
+        $body = is_array($request->getParsedBody()) ? $request->getParsedBody() : [];
+        if ($authorisation === null || ($body['confirm'] ?? '') !== 'rotate') {
+            return $response->withStatus(403);
+        }
+        [$grant, $slug] = $authorisation;
+        try {
+            $result = $this->credentialRotation->rotateParticipant($grant, $slug, new DateTimeImmutable());
+        } catch (DomainException) {
+            return $response->withStatus(409);
+        }
+        $locale = $this->bodyLocale($body);
+        $translator = TranslatorFactory::create($locale, $this->translationDirectory);
+        $participantLink = $this->baseUrl . '/pulse/r/' . rawurlencode($slug) . '#' . rawurlencode($result->participantSecret);
+        $response->getBody()->write($this->credentialPage->renderParticipantResult(
+            $translator,
+            $locale,
+            $participantLink,
+            '/pulse/manage/r/' . rawurlencode($slug) . '/events?lang=' . rawurlencode($locale),
+            self::LANGUAGES,
+        ));
+
+        return $response->withHeader('Content-Type', 'text/html; charset=utf-8');
+    }
+
     private function participantGrant(ServerRequestInterface $request, string $slug): ?\Sats4you\Pulse\Pulse\PublicAccess\AccessGrant
     {
         return $this->accessExchange->validateParticipant(
@@ -447,6 +597,14 @@ final readonly class PulseApplicationFactory
     private function locale(ServerRequestInterface $request): string
     {
         $locale = (string) ($request->getQueryParams()['lang'] ?? 'de');
+
+        return array_key_exists($locale, self::LANGUAGES) ? $locale : 'de';
+    }
+
+    /** @param array<string, mixed> $body */
+    private function bodyLocale(array $body): string
+    {
+        $locale = (string) ($body['lang'] ?? 'de');
 
         return array_key_exists($locale, self::LANGUAGES) ? $locale : 'de';
     }

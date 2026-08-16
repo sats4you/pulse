@@ -57,6 +57,20 @@ final class AdminPage
         }
         $noticeHtml = $notice === null ? '' : '<p class="notice" role="status">' . $t($notice) . '</p>';
         $newPath = '/pulse/manage/r/' . rawurlencode($publicSlug) . '/events?new=1&amp;lang=' . rawurlencode($locale);
+        $rotationPath = '/pulse/manage/r/' . rawurlencode($publicSlug) . '/participant-link/rotate';
+        $credentials = <<<HTML
+            <section class="credential-admin" aria-labelledby="credential-heading">
+                <h2 id="credential-heading">{$t('credentials.heading')}</h2>
+                <p>{$t('credentials.participant_explanation')}</p>
+                <p class="warning">{$t('credentials.participant_warning')}</p>
+                <form method="post" action="{$e($rotationPath)}">
+                    <input type="hidden" name="csrf" value="{$e($csrfToken)}">
+                    <input type="hidden" name="lang" value="{$e($locale)}">
+                    <label class="confirmation"><input type="checkbox" name="confirm" value="rotate" required> <span>{$t('credentials.participant_confirm')}</span></label>
+                    <button class="secondary" type="submit">{$t('credentials.participant_button')}</button>
+                </form>
+            </section>
+            HTML;
 
         return <<<HTML
             <!doctype html>
@@ -89,6 +103,7 @@ final class AdminPage
                     {$noticeHtml}
                     {$form}
                     <div class="event-list admin-events">{$cards}</div>
+                    {$credentials}
                     <aside class="privacy-admin">{$t('admin.privacy_notice')} <a href="/pulse/privacy?lang={$e($locale)}">{$t('privacy.link')}</a></aside>
                     <p class="footnote">{$t('pilot.label')} · {$t('admin.secret_notice')}</p>
                 </main>

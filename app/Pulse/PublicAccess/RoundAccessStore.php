@@ -10,5 +10,7 @@ interface RoundAccessStore
 
     public function findAdministratorGrant(string $publicSlug, string $presentedDigest): ?AccessGrant;
 
+    public function findRecoveryGrant(string $publicSlug, string $presentedDigest): ?AccessGrant;
+
     public function isCurrent(AccessGrant $grant, string $publicSlug): bool;
 }

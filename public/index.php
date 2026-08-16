@@ -14,6 +14,10 @@ use Sats4you\Pulse\Pulse\Administration\AdminBootstrapPage;
 use Sats4you\Pulse\Pulse\Administration\AdminEventService;
 use Sats4you\Pulse\Pulse\Administration\AdminPage;
 use Sats4you\Pulse\Pulse\Administration\PdoAdminEventStore;
+use Sats4you\Pulse\Pulse\Credentials\CredentialPage;
+use Sats4you\Pulse\Pulse\Credentials\CredentialRotationService;
+use Sats4you\Pulse\Pulse\Credentials\PdoCredentialStore;
+use Sats4you\Pulse\Pulse\Credentials\RecoveryBootstrapPage;
 use Sats4you\Pulse\Pulse\Event\EventAccessPolicy;
 use Sats4you\Pulse\Pulse\PublicAccess\AccessExchange;
 use Sats4you\Pulse\Pulse\PublicAccess\AccessSessionCodec;
@@ -66,16 +70,20 @@ $app = (new PulseApplicationFactory(
     $accessExchange,
     $participantFlow,
     new AdminEventService(new PdoAdminEventStore($connection), new RetentionSchedule()),
+    new CredentialRotationService(new PdoCredentialStore($connection), new SecretGenerator(), $digester),
     new BootstrapPage(),
     new ParticipantPage($policy),
     new PulseLandingPage(),
     new AdminBootstrapPage(),
     new AdminPage(),
+    new RecoveryBootstrapPage(),
+    new CredentialPage(),
     new PrivacyPage(),
     new SameOriginGuard($baseUrl),
     new CsrfToken(hash_hmac('sha256', 'pulse-csrf', $hmacKey, true)),
     dirname(__DIR__) . '/resources/translations',
     'Bern Monthly Bitcoin Meetup',
+    $baseUrl,
     str_starts_with($baseUrl, 'https://'),
 ))->create();
 $app->run();
