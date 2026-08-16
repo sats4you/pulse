@@ -112,6 +112,9 @@ h1 {
   font-size: clamp(2.25rem, 8vw, 4.3rem);
   line-height: .98;
   letter-spacing: -.045em;
+  overflow-wrap: anywhere;
+  hyphens: auto;
+  text-wrap: balance;
 }
 
 .lead {
@@ -337,7 +340,10 @@ summary { cursor: pointer; font-weight: 700; }
 @media (max-width: 420px) {
   .shell { width: min(100% - 28px, 680px); }
   .language { align-items: flex-end; flex-direction: column; }
-  h1 { font-size: clamp(2.35rem, 12vw, 3.1rem); }
+  h1 {
+    font-size: clamp(2rem, 10vw, 2.65rem);
+    letter-spacing: -.035em;
+  }
   .event-card-head { grid-template-columns: 1fr; }
   .count { display: flex; align-items: baseline; gap: 8px; min-width: 0; text-align: left; }
   .admin-title { align-items: stretch; flex-direction: column; }

@@ -47,7 +47,7 @@ final class RecoveryBootstrapPage
                 <meta name="robots" content="noindex,nofollow,noarchive">
                 <title>{$t('recovery.access_heading')} · pulse</title>
                 <link rel="icon" href="/assets/sats4you-favicon.svg" type="image/svg+xml">
-                <link rel="stylesheet" href="/assets/pulse.css?v=20260816-ci1">
+                <link rel="stylesheet" href="/assets/pulse.css?v=20260816-mobile1">
             </head>
             <body>
                 <main class="shell" id="pulse-app" data-pulse-config="{$config}">

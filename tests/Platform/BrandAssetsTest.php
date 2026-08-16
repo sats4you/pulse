@@ -19,6 +19,8 @@ final class BrandAssetsTest extends TestCase
         self::assertStringContainsString('url("/assets/fonts/inter/Inter-ExtraBold.woff2")', $css);
         self::assertStringNotContainsString('fonts.googleapis.com', $css);
         self::assertStringNotContainsString('rsms.me/inter', $css);
+        self::assertStringContainsString('overflow-wrap: anywhere', $css);
+        self::assertStringContainsString('hyphens: auto', $css);
 
         foreach ([
             'Inter-Regular.woff2',
