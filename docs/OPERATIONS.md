@@ -45,10 +45,15 @@ The job deletes due active RSVP records and due events from the primary database
 
 Do not operate the closed pilot with real group data until all of the following have been verified and documented:
 
-- backup copies are removed no later than 30 days after primary deletion;
+- daily encrypted lima-city backups and provider access/security data are described visibly with their published maximum retention of 90 days;
+- backups are used only for technical recovery, never for analytics or normal application access;
 - access and security log fields and retention periods match the privacy explanation;
 - HTTPS, security headers and cookie attributes are correct in the real environment;
 - the deletion command runs reliably and failures are noticed without logging sensitive data;
 - the legal controller and contact details have been added to the final privacy notice.
 
-The currently known 90-day standard backup retention at lima-city conflicts with the approved maximum. The application must not be declared production-ready while that conflict remains unresolved.
+The 90-day lima-city retention is an accepted and documented pilot boundary. The pending support request may improve these periods but is not a deployment blocker.
+
+## Restore procedure
+
+Never restore a database backup while the public application is available. Put pulse into maintenance mode, restore the selected backup, then rotate the participant, administration and recovery credentials before reopening access. This prevents participant or administration links revoked after the backup date from remaining valid again. Document the restore, credential rotation and reopening without recording any raw secret.

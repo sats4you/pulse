@@ -28,6 +28,8 @@ Administration sessions expire after at most twelve hours. State-changing admini
 
 Recovery exchange creates only a recovery-scoped session for at most ten minutes. It cannot administer events. The confirmed transaction replaces both administration and recovery digests and increments both versions, invalidating old links and all old administration sessions. Participant-link rotation increments only the participant-access version; event and RSVP rows remain unchanged.
 
-## Hosting gate
+## Hosting and retention boundary
 
-Implementation may proceed independently of the hosting provider. Persistent pilot operation is not approved until the provider’s backup retention and logging behaviour match the published privacy and deletion rules. In particular, the current 90-day lima-city backup retention conflicts with the approved maximum of 30 days after primary deletion.
+The closed pilot accepts lima-city's published operating conditions. RSVPs are removed from the active database immediately on withdrawal or otherwise seven days after an event; event data is removed after 30 days. Daily encrypted provider backups are retained for up to 90 days, so deleted primary data can remain in a backup for up to 90 additional days. Technically necessary access, connection and security data may also be processed by the provider for up to 90 days.
+
+Backups are for technical recovery only. A restore must happen in maintenance mode and be followed by rotation of participant, administration and recovery credentials before the application is reopened, preventing revoked credentials from remaining reactivated by an older database state.

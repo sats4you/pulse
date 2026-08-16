@@ -20,7 +20,7 @@ This private repository now contains a tested vertical implementation slice. It 
 - not yet deployed;
 - not yet open for other groups;
 - no real access links, secrets or participant data belong in this repository;
-- persistent hosting is not approved until the backup-retention conflict is resolved.
+- the closed pilot is designed for lima-city's published 90-day backup and infrastructure-log limits; final operational checks and controller details remain before deployment.
 
 The repository will only be made public after the implementation, privacy information, self-hosting guide and release checks match the version actually operated on sats4you.ch.
 
