@@ -134,8 +134,6 @@ final class AdminPage
             'admin.field_start',
             $event?->details->timing->startsAt,
             false,
-            18,
-            30,
         );
         $endsAtFields = $this->dateTimeFields(
             $translator,
@@ -143,8 +141,6 @@ final class AdminPage
             'admin.field_end',
             $event?->details->timing->endsAt,
             true,
-            21,
-            0,
         );
         $location = $event?->details->location ?? '';
         $note = $event?->details->note ?? '';
@@ -154,8 +150,6 @@ final class AdminPage
             'admin.field_publish_at',
             $event?->publishAt,
             true,
-            12,
-            0,
         );
         $heading = $event === null ? $t('admin.form_new') : $t('admin.form_edit');
         $saveLabel = $event === null ? $t('admin.save_draft') : $t('admin.save_changes');
@@ -314,8 +308,6 @@ final class AdminPage
         string $legendKey,
         ?DateTimeImmutable $date,
         bool $optional,
-        int $defaultHour,
-        int $defaultMinute,
     ): string
     {
         $e = static fn (string $value): string => htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
@@ -326,22 +318,23 @@ final class AdminPage
         );
         $local = $date?->setTimezone(new DateTimeZone('Europe/Zurich'));
         $dateValue = $local?->format('Y-m-d') ?? '';
-        $hour = $local === null ? $defaultHour : (int) $local->format('H');
-        $minute = $local === null ? $defaultMinute : (int) $local->format('i');
-        $hourOptions = '';
+        $hour = $local === null ? null : (int) $local->format('H');
+        $minute = $local === null ? null : (int) $local->format('i');
+        $hourOptions = '<option value=""' . ($hour === null ? ' selected' : '') . '>–</option>';
         foreach (range(0, 23) as $candidate) {
             $value = sprintf('%02d', $candidate);
             $hourOptions .= '<option value="' . $value . '"' . ($candidate === $hour ? ' selected' : '') . '>' . $value . '</option>';
         }
-        $minuteOptions = '';
+        $minuteOptions = '<option value=""' . ($minute === null ? ' selected' : '') . '>–</option>';
         foreach ([0, 15, 30, 45] as $candidate) {
             $value = sprintf('%02d', $candidate);
             $minuteOptions .= '<option value="' . $value . '"' . ($candidate === $minute ? ' selected' : '') . '>' . $value . '</option>';
         }
         $required = $optional ? '' : ' required';
+        $timeRequired = $optional ? '' : ' required';
 
         return sprintf(
-            '<fieldset class="date-time-field"><legend>%s</legend><div class="date-time-inputs"><label><span>%s</span><input type="date" name="%s_date" value="%s"%s></label><label><span>%s</span><select name="%s_hour">%s</select></label><label><span>%s</span><select name="%s_minute">%s</select></label></div></fieldset>',
+            '<fieldset class="date-time-field"><legend>%s</legend><div class="date-time-inputs"><label><span>%s</span><input type="date" name="%s_date" value="%s"%s></label><label><span>%s</span><select name="%s_hour"%s>%s</select></label><label><span>%s</span><select name="%s_minute"%s>%s</select></label></div></fieldset>',
             $t($legendKey),
             $t('admin.field_date'),
             $e($name),
@@ -349,9 +342,11 @@ final class AdminPage
             $required,
             $t('admin.field_hour'),
             $e($name),
+            $timeRequired,
             $hourOptions,
             $t('admin.field_minute'),
             $e($name),
+            $timeRequired,
             $minuteOptions,
         );
     }

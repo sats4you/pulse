@@ -132,8 +132,9 @@ final class PulseApplicationFactoryTest extends TestCase
         self::assertStringContainsString('data-event-form', (string) $page->getBody());
         self::assertStringNotContainsString('type="datetime-local"', (string) $page->getBody());
         self::assertStringContainsString('name="starts_at_date"', (string) $page->getBody());
-        preg_match('/<select name="starts_at_minute">(.*?)<\/select>/s', (string) $page->getBody(), $minuteSelect);
-        self::assertSame(4, substr_count($minuteSelect[1] ?? '', '<option'));
+        preg_match('/<select name="starts_at_minute" required>(.*?)<\/select>/s', (string) $page->getBody(), $minuteSelect);
+        self::assertSame(5, substr_count($minuteSelect[1] ?? '', '<option'));
+        self::assertStringContainsString('<option value="" selected>–</option>', $minuteSelect[1] ?? '');
         foreach (['00', '15', '30', '45'] as $minute) {
             self::assertStringContainsString('value="' . $minute . '"', $minuteSelect[1] ?? '');
         }
