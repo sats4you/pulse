@@ -502,6 +502,7 @@ final readonly class PulseApplicationFactory
                 ),
                 'cancel' => $this->adminEvents->cancel($grant, $eventId, $now),
                 'close' => $this->adminEvents->closeRsvps($grant, $eventId, $now),
+                'open' => $this->adminEvents->openRsvps($grant, $eventId, $now),
                 'duplicate' => $this->adminEvents->duplicate($grant, $eventId, $now),
                 'save' => null,
                 default => throw new InvalidArgumentException('Unknown event operation.'),

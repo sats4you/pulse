@@ -42,6 +42,9 @@ final class AdminEventServiceTest extends TestCase
         $closed = $service->closeRsvps($grant, $event->publicId, $now->modify('+2 hours'));
         self::assertEquals($now->modify('+2 hours'), $closed->rsvpClosedAt);
 
+        $reopened = $service->openRsvps($grant, $event->publicId, $now->modify('+2 hours 30 minutes'));
+        self::assertNull($reopened->rsvpClosedAt);
+
         $cancelled = $service->cancel($grant, $event->publicId, $now->modify('+3 hours'));
         self::assertSame(PublicationState::Cancelled, $cancelled->publicationState);
 
@@ -80,6 +83,23 @@ final class AdminEventServiceTest extends TestCase
         $cancelled = $service->cancel($this->administrator(), $event->publicId, $now->modify('+2 hours'));
 
         self::assertSame(PublicationState::Cancelled, $cancelled->publicationState);
+    }
+
+    public function testRsvpsCannotBeReopenedAtOrAfterEventStart(): void
+    {
+        $now = new DateTimeImmutable('2026-08-15T12:00:00Z');
+        $service = new AdminEventService(new InMemoryAdminEventStore(), new RetentionSchedule());
+        $event = $service->create(
+            $this->administrator(),
+            new EventDetails('Termin', $now->modify('+2 hours'), null, null, null),
+            PublicationState::Published,
+            null,
+            $now,
+        );
+        $service->closeRsvps($this->administrator(), $event->publicId, $now->modify('+1 hour'));
+
+        $this->expectException(DomainException::class);
+        $service->openRsvps($this->administrator(), $event->publicId, $now->modify('+2 hours'));
     }
 
     public function testParticipantCannotReadAdministration(): void

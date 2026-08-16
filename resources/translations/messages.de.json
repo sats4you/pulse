@@ -68,6 +68,8 @@
   "admin.publish": "Veröffentlichen",
   "admin.schedule": "Veröffentlichung planen",
   "admin.close_rsvp": "Zusagen schliessen",
+  "admin.close_rsvp_confirm": "Neue Zusagen wirklich schliessen? Du kannst sie vor Terminbeginn wieder öffnen.",
+  "admin.open_rsvp": "Zusagen wieder öffnen",
   "admin.access_eyebrow": "pulse · geheime Verwaltung",
   "admin.access_heading": "Verwaltungszugang wird geöffnet",
   "admin.access_explanation": "Dieser geheime Link öffnet die Terminverwaltung ohne Benutzerkonto.",

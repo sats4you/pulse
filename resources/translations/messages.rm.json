@@ -68,6 +68,8 @@
   "admin.publish": "Publitgar",
   "admin.schedule": "Planisar la publicaziun",
   "admin.close_rsvp": "Serrar las annunzias",
+  "admin.close_rsvp_confirm": "Vuls ti propi serrar novas annunzias? Ti las pos reavrir avant il cumenzament da l’occurrenza.",
+  "admin.open_rsvp": "Reavrir las annunzias",
   "admin.access_eyebrow": "pulse · administraziun secreta",
   "admin.access_heading": "L’access d’administraziun vegn avert",
   "admin.access_explanation": "Quest link secret avra l’administraziun dals termins senza conto d’utilisader.",

@@ -108,7 +108,7 @@ final class AdminPage
                     <aside class="privacy-admin">{$t('admin.privacy_notice')} <a href="/pulse/privacy?lang={$e($locale)}">{$t('privacy.link')}</a></aside>
                     <p class="footnote">{$t('pilot.label')} · {$t('admin.secret_notice')}</p>
                 </main>
-                <script src="/assets/participant-page.js" defer></script>
+                <script src="/assets/participant-page.js?v=20260816-rsvp1" defer></script>
             </body>
             </html>
             HTML;
@@ -207,10 +207,20 @@ final class AdminPage
             $actions .= $this->actionForm($translator, $locale, $slug, $event, 'publish', 'admin.publish', $csrfToken);
         }
         if (($event->publicationState === PublicationState::Published || $scheduledIsVisible)
-            && $event->rsvpClosedAt === null
             && $now < $event->details->timing->startsAt
         ) {
-            $actions .= $this->actionForm($translator, $locale, $slug, $event, 'close', 'admin.close_rsvp', $csrfToken);
+            $actions .= $event->rsvpClosedAt === null
+                ? $this->actionForm(
+                    $translator,
+                    $locale,
+                    $slug,
+                    $event,
+                    'close',
+                    'admin.close_rsvp',
+                    $csrfToken,
+                    'admin.close_rsvp_confirm',
+                )
+                : $this->actionForm($translator, $locale, $slug, $event, 'open', 'admin.open_rsvp', $csrfToken);
         }
         if ($event->publicationState === PublicationState::Published || $scheduledIsVisible) {
             $actions .= $this->actionForm($translator, $locale, $slug, $event, 'cancel', 'admin.cancel_event', $csrfToken);
@@ -241,12 +251,21 @@ final class AdminPage
         string $intent,
         string $labelKey,
         string $csrfToken,
+        ?string $confirmKey = null,
     ): string {
         $action = '/pulse/manage/r/' . rawurlencode($slug) . '/events/' . rawurlencode($event->publicId);
+        $confirmation = $confirmKey === null
+            ? ''
+            : ' data-confirm="' . htmlspecialchars(
+                $translator->trans($confirmKey),
+                ENT_QUOTES | ENT_SUBSTITUTE,
+                'UTF-8',
+            ) . '"';
 
         return sprintf(
-            '<form method="post" action="%s"><input type="hidden" name="csrf" value="%s"><input type="hidden" name="lang" value="%s"><button class="link-button" name="intent" value="%s" type="submit">%s</button></form>',
+            '<form method="post" action="%s"%s><input type="hidden" name="csrf" value="%s"><input type="hidden" name="lang" value="%s"><button class="link-button" name="intent" value="%s" type="submit">%s</button></form>',
             htmlspecialchars($action, ENT_QUOTES, 'UTF-8'),
+            $confirmation,
             htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8'),
             htmlspecialchars($locale, ENT_QUOTES, 'UTF-8'),
             htmlspecialchars($intent, ENT_QUOTES, 'UTF-8'),

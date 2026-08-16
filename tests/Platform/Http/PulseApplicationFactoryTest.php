@@ -151,7 +151,39 @@ final class PulseApplicationFactoryTest extends TestCase
         );
         self::assertSame(303, $create->getStatusCode());
         self::assertCount(1, $adminStore->events);
-        self::assertSame(PublicationState::Published, array_values($adminStore->events)[0]->publicationState);
+        $createdEvent = array_values($adminStore->events)[0];
+        self::assertSame(PublicationState::Published, $createdEvent->publicationState);
+
+        $adminList = $app->handle(
+            $requests->createServerRequest('GET', '/pulse/manage/r/' . self::SLUG . '/events?lang=de')
+                ->withQueryParams(['lang' => 'de'])
+                ->withCookieParams(['pulse_admin' => $adminCookie]),
+        );
+        self::assertStringContainsString('data-confirm="Neue Zusagen wirklich schliessen?', (string) $adminList->getBody());
+
+        $close = $app->handle(
+            $requests->createServerRequest(
+                'POST',
+                '/pulse/manage/r/' . self::SLUG . '/events/' . $createdEvent->publicId,
+            )
+                ->withHeader('Origin', self::ORIGIN)
+                ->withParsedBody(['csrf' => $matches[1], 'lang' => 'de', 'intent' => 'close'])
+                ->withCookieParams(['pulse_admin' => $adminCookie]),
+        );
+        self::assertSame(303, $close->getStatusCode());
+        self::assertNotNull($adminStore->events[$createdEvent->publicId]->rsvpClosedAt);
+
+        $open = $app->handle(
+            $requests->createServerRequest(
+                'POST',
+                '/pulse/manage/r/' . self::SLUG . '/events/' . $createdEvent->publicId,
+            )
+                ->withHeader('Origin', self::ORIGIN)
+                ->withParsedBody(['csrf' => $matches[1], 'lang' => 'de', 'intent' => 'open'])
+                ->withCookieParams(['pulse_admin' => $adminCookie]),
+        );
+        self::assertSame(303, $open->getStatusCode());
+        self::assertNull($adminStore->events[$createdEvent->publicId]->rsvpClosedAt);
 
         $withoutCsrf = $app->handle(
             $requests->createServerRequest('POST', '/pulse/manage/r/' . self::SLUG . '/events')

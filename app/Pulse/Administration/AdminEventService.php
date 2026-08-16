@@ -172,6 +172,36 @@ final readonly class AdminEventService
         return $updated;
     }
 
+    public function openRsvps(AccessGrant $grant, string $publicEventId, DateTimeImmutable $now): AdminEvent
+    {
+        $event = $this->required($grant, $publicEventId);
+        $isVisible = $event->publicationState === PublicationState::Published
+            || ($event->publicationState === PublicationState::Scheduled
+                && $event->publishAt !== null
+                && $event->publishAt <= $now);
+        if (!$isVisible || $event->rsvpClosedAt === null || $now >= $event->details->timing->startsAt) {
+            throw new DomainException('rsvp_cannot_be_opened');
+        }
+
+        $updated = new AdminEvent(
+            $event->id,
+            $event->publicId,
+            $event->roundId,
+            $event->details,
+            $event->publicationState,
+            $event->publishAt,
+            null,
+            $event->materialChangedAt,
+            $event->createdAt,
+            $now,
+            $event->deleteAt,
+            $event->attendanceCount,
+        );
+        $this->store->save($updated);
+
+        return $updated;
+    }
+
     public function duplicate(AccessGrant $grant, string $publicEventId, DateTimeImmutable $now): AdminEvent
     {
         $event = $this->required($grant, $publicEventId);
