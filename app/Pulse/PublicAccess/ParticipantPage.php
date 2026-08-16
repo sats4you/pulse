@@ -64,7 +64,7 @@ final readonly class ParticipantPage
                 <meta name="robots" content="noindex,nofollow,noarchive">
                 <title>{$t('participant.heading')} · pulse</title>
                 <link rel="icon" href="/assets/sats4you-favicon.svg" type="image/svg+xml">
-                <link rel="stylesheet" href="/assets/pulse.css?v=20260816-mobile1">
+                <link rel="stylesheet" href="/assets/pulse.css?v=20260816-group1">
             </head>
             <body>
                 <main class="shell">
@@ -79,7 +79,8 @@ final readonly class ParticipantPage
                         <label for="language">{$t('language.select')}</label>
                         <select id="language" data-current-path="/pulse/r/{$escape($publicSlug)}/events">{$options}</select>
                     </div>
-                    <p class="eyebrow">pulse · {$group}</p>
+                    <p class="eyebrow">pulse</p>
+                    <p class="group-title">{$group}</p>
                     <h1>{$t('participant.heading')}</h1>
                     <p class="lead">{$t('privacy.short')}</p>
                     <p><a class="privacy-link" href="/pulse/privacy?lang={$localeAttribute}">{$t('privacy.link')}</a></p>
