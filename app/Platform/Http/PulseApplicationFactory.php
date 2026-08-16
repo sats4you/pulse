@@ -423,6 +423,7 @@ final readonly class PulseApplicationFactory
             'saved' => 'admin.saved',
             'invalid' => 'admin.invalid',
             'timing' => 'admin.invalid_timing',
+            'time_step' => 'admin.invalid_time_step',
             'failed' => 'admin.action_failed',
             default => null,
         };
@@ -474,7 +475,7 @@ final readonly class PulseApplicationFactory
                 $request,
                 $response,
                 $slug,
-                $error->getMessage() === 'Event end must be later than event start.' ? 'timing' : 'invalid',
+                $this->invalidEventNotice($error),
             );
         } catch (DomainException $error) {
             $this->logAdminEventFailure('create', $error->getMessage());
@@ -522,7 +523,7 @@ final readonly class PulseApplicationFactory
                 $request,
                 $response,
                 $slug,
-                $error->getMessage() === 'Event end must be later than event start.' ? 'timing' : 'invalid',
+                $this->invalidEventNotice($error),
             );
         } catch (DomainException $error) {
             $this->logAdminEventFailure('mutate', $error->getMessage());
@@ -631,8 +632,20 @@ final readonly class PulseApplicationFactory
         if ($date === false || ($errors !== false && ($errors['warning_count'] > 0 || $errors['error_count'] > 0))) {
             throw new InvalidArgumentException('Invalid local date.');
         }
+        if ((int) $date->format('i') % 15 !== 0) {
+            throw new InvalidArgumentException('Time must use 15-minute increments.');
+        }
 
         return $date;
+    }
+
+    private function invalidEventNotice(InvalidArgumentException $error): string
+    {
+        return match ($error->getMessage()) {
+            'Event end must be later than event start.' => 'timing',
+            'Time must use 15-minute increments.' => 'time_step',
+            default => 'invalid',
+        };
     }
 
     private function locale(ServerRequestInterface $request): string

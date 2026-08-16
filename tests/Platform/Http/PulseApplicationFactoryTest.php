@@ -130,15 +130,17 @@ final class PulseApplicationFactoryTest extends TestCase
         self::assertSame(200, $page->getStatusCode());
         self::assertStringContainsString('Neuen Termin erfassen', (string) $page->getBody());
         self::assertStringContainsString('data-event-form', (string) $page->getBody());
+        self::assertStringContainsString('name="starts_at" step="900"', (string) $page->getBody());
         preg_match('/name="csrf" value="([^"]+)"/', (string) $page->getBody(), $matches);
         self::assertNotEmpty($matches[1] ?? null);
 
+        $eventStart = (new DateTimeImmutable('+20 days', new DateTimeZone('Europe/Zurich')))->setTime(18, 30);
         $createBody = [
             'csrf' => $matches[1],
             'lang' => 'de',
             'intent' => 'publish',
             'title' => 'September-Treffen',
-            'starts_at' => (new DateTimeImmutable('+20 days', new DateTimeZone('Europe/Zurich')))->format('Y-m-d\TH:i'),
+            'starts_at' => $eventStart->format('Y-m-d\TH:i'),
             'ends_at' => '',
             'location' => 'Restaurant in Bern',
             'note' => '',
@@ -148,12 +150,24 @@ final class PulseApplicationFactoryTest extends TestCase
             $requests->createServerRequest('POST', '/pulse/manage/r/' . self::SLUG . '/events')
                 ->withHeader('Origin', self::ORIGIN)
                 ->withParsedBody(array_merge($createBody, [
-                    'ends_at' => (new DateTimeImmutable('+19 days', new DateTimeZone('Europe/Zurich')))->format('Y-m-d\TH:i'),
+                    'ends_at' => $eventStart->modify('-1 hour')->format('Y-m-d\TH:i'),
                 ]))
                 ->withCookieParams(['pulse_admin' => $adminCookie]),
         );
         self::assertSame(303, $invalidTiming->getStatusCode());
         self::assertStringContainsString('notice=timing', $invalidTiming->getHeaderLine('Location'));
+        self::assertCount(0, $adminStore->events);
+
+        $invalidTimeStep = $app->handle(
+            $requests->createServerRequest('POST', '/pulse/manage/r/' . self::SLUG . '/events')
+                ->withHeader('Origin', self::ORIGIN)
+                ->withParsedBody(array_merge($createBody, [
+                    'starts_at' => $eventStart->setTime(18, 7)->format('Y-m-d\TH:i'),
+                ]))
+                ->withCookieParams(['pulse_admin' => $adminCookie]),
+        );
+        self::assertSame(303, $invalidTimeStep->getStatusCode());
+        self::assertStringContainsString('notice=time_step', $invalidTimeStep->getHeaderLine('Location'));
         self::assertCount(0, $adminStore->events);
 
         $create = $app->handle(
@@ -235,6 +249,45 @@ final class PulseApplicationFactoryTest extends TestCase
         );
         self::assertSame(303, $draftDelete->getStatusCode());
         self::assertArrayNotHasKey($draft->publicId, $adminStore->events);
+
+        $scheduledBody = array_merge($createBody, [
+            'intent' => 'schedule',
+            'title' => 'Geplante Veröffentlichung',
+            'starts_at' => $eventStart->modify('+30 days')->format('Y-m-d\TH:i'),
+            'publish_at' => (new DateTimeImmutable('+1 day', new DateTimeZone('Europe/Zurich')))
+                ->setTime(12, 0)
+                ->format('Y-m-d\TH:i'),
+        ]);
+        $scheduledCreate = $app->handle(
+            $requests->createServerRequest('POST', '/pulse/manage/r/' . self::SLUG . '/events')
+                ->withHeader('Origin', self::ORIGIN)
+                ->withParsedBody($scheduledBody)
+                ->withCookieParams(['pulse_admin' => $adminCookie]),
+        );
+        self::assertSame(303, $scheduledCreate->getStatusCode());
+        $scheduled = array_values(array_filter(
+            $adminStore->events,
+            static fn ($event): bool => $event->publicationState === PublicationState::Scheduled,
+        ))[0];
+        $scheduledList = $app->handle(
+            $requests->createServerRequest('GET', '/pulse/manage/r/' . self::SLUG . '/events?lang=de')
+                ->withQueryParams(['lang' => 'de'])
+                ->withCookieParams(['pulse_admin' => $adminCookie]),
+        );
+        self::assertStringContainsString('Veröffentlichung geplant', (string) $scheduledList->getBody());
+        self::assertStringContainsString('Geplante Veröffentlichung', (string) $scheduledList->getBody());
+
+        $scheduledDelete = $app->handle(
+            $requests->createServerRequest(
+                'POST',
+                '/pulse/manage/r/' . self::SLUG . '/events/' . $scheduled->publicId,
+            )
+                ->withHeader('Origin', self::ORIGIN)
+                ->withParsedBody(['csrf' => $matches[1], 'lang' => 'de', 'intent' => 'delete'])
+                ->withCookieParams(['pulse_admin' => $adminCookie]),
+        );
+        self::assertSame(303, $scheduledDelete->getStatusCode());
+        self::assertArrayNotHasKey($scheduled->publicId, $adminStore->events);
 
         $withoutCsrf = $app->handle(
             $requests->createServerRequest('POST', '/pulse/manage/r/' . self::SLUG . '/events')

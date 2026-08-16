@@ -159,12 +159,13 @@ final class AdminPage
                     <input type="hidden" name="lang" value="{$e($locale)}">
                     <label>{$t('admin.field_title')}<input name="title" maxlength="180" required value="{$e($title)}"></label>
                     <div class="form-grid">
-                        <label>{$t('admin.field_start')}<input type="datetime-local" name="starts_at" required value="{$e($startsAt)}"></label>
-                        <label>{$t('admin.field_end')}<input type="datetime-local" name="ends_at" value="{$e($endsAt)}"></label>
+                        <label>{$t('admin.field_start')}<input type="datetime-local" name="starts_at" step="900" required value="{$e($startsAt)}"></label>
+                        <label>{$t('admin.field_end')}<input type="datetime-local" name="ends_at" step="900" value="{$e($endsAt)}"></label>
                     </div>
+                    <p class="field-help">{$t('admin.time_step_help')}</p>
                     <label>{$t('admin.field_location')}<input name="location" maxlength="240" value="{$e($location)}"></label>
                     <label>{$t('admin.field_note')}<textarea name="note" maxlength="1000" rows="3">{$e($note)}</textarea></label>
-                    <label>{$t('admin.field_publish_at')}<input type="datetime-local" name="publish_at" value="{$e($publishAt)}"></label>
+                    <label>{$t('admin.field_publish_at')}<input type="datetime-local" name="publish_at" step="900" value="{$e($publishAt)}"></label>
                     <p class="field-help">{$t('admin.publish_help')}</p>
                     <div class="form-actions">
                         <button class="secondary" name="intent" value="save" type="submit">{$saveLabel}</button>
