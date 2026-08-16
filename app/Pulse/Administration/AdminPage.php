@@ -108,7 +108,7 @@ final class AdminPage
                     <aside class="privacy-admin">{$t('admin.privacy_notice')} <a href="/pulse/privacy?lang={$e($locale)}">{$t('privacy.link')}</a></aside>
                     <p class="footnote">{$t('pilot.label')} · {$t('admin.secret_notice')}</p>
                 </main>
-                <script src="/assets/participant-page.js?v=20260816-rsvp1" defer></script>
+                <script src="/assets/participant-page.js?v=20260816-rsvp2" defer></script>
             </body>
             </html>
             HTML;
@@ -154,7 +154,7 @@ final class AdminPage
         return <<<HTML
             <section class="editor" aria-labelledby="event-form-heading">
                 <h2 id="event-form-heading">{$heading}</h2>
-                <form method="post" action="{$e($action)}">
+                <form method="post" action="{$e($action)}" data-event-form data-timing-error="{$t('admin.invalid_timing')}">
                     <input type="hidden" name="csrf" value="{$e($csrfToken)}">
                     <input type="hidden" name="lang" value="{$e($locale)}">
                     <label>{$t('admin.field_title')}<input name="title" maxlength="180" required value="{$e($title)}"></label>

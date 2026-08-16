@@ -105,6 +105,7 @@
   "admin.state_cancelled": "Annullato",
   "admin.saved": "Modifica salvata.",
   "admin.invalid": "Controlla i dati inseriti.",
+  "admin.invalid_timing": "La fine deve essere successiva all’inizio. Modifica la data di fine oppure lasciala vuota.",
   "admin.action_failed": "Questa azione non è possibile nello stato attuale.",
   "recovery.access_eyebrow": "pulse · ripristino",
   "recovery.access_heading": "Ripristina l’accesso di gestione",

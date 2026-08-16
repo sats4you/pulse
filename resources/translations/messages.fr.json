@@ -105,6 +105,7 @@
   "admin.state_cancelled": "Annulé",
   "admin.saved": "Modification enregistrée.",
   "admin.invalid": "Vérifie les renseignements saisis.",
+  "admin.invalid_timing": "La fin doit être postérieure au début. Modifie la date de fin ou laisse-la vide.",
   "admin.action_failed": "Cette action n’est pas possible dans l’état actuel.",
   "recovery.access_eyebrow": "pulse · récupération",
   "recovery.access_heading": "Récupérer l’accès de gestion",

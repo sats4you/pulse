@@ -129,6 +129,7 @@ final class PulseApplicationFactoryTest extends TestCase
         );
         self::assertSame(200, $page->getStatusCode());
         self::assertStringContainsString('Neuen Termin erfassen', (string) $page->getBody());
+        self::assertStringContainsString('data-event-form', (string) $page->getBody());
         preg_match('/name="csrf" value="([^"]+)"/', (string) $page->getBody(), $matches);
         self::assertNotEmpty($matches[1] ?? null);
 
@@ -143,6 +144,18 @@ final class PulseApplicationFactoryTest extends TestCase
             'note' => '',
             'publish_at' => '',
         ];
+        $invalidTiming = $app->handle(
+            $requests->createServerRequest('POST', '/pulse/manage/r/' . self::SLUG . '/events')
+                ->withHeader('Origin', self::ORIGIN)
+                ->withParsedBody(array_merge($createBody, [
+                    'ends_at' => (new DateTimeImmutable('+19 days', new DateTimeZone('Europe/Zurich')))->format('Y-m-d\TH:i'),
+                ]))
+                ->withCookieParams(['pulse_admin' => $adminCookie]),
+        );
+        self::assertSame(303, $invalidTiming->getStatusCode());
+        self::assertStringContainsString('notice=timing', $invalidTiming->getHeaderLine('Location'));
+        self::assertCount(0, $adminStore->events);
+
         $create = $app->handle(
             $requests->createServerRequest('POST', '/pulse/manage/r/' . self::SLUG . '/events')
                 ->withHeader('Origin', self::ORIGIN)

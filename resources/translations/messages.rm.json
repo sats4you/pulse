@@ -105,6 +105,7 @@
   "admin.state_cancelled": "Annullà",
   "admin.saved": "Midada memorisada.",
   "admin.invalid": "Controllescha las indicaziuns endatadas.",
+  "admin.invalid_timing": "La fin sto esser suenter il cumenzament. Adattescha la data da fin u lascha la fin averta.",
   "admin.action_failed": "Questa acziun n’è betg pussaivla en il stadi actual.",
   "recovery.access_eyebrow": "pulse · restabiliment",
   "recovery.access_heading": "Restabilir l’access d’administraziun",

@@ -422,6 +422,7 @@ final readonly class PulseApplicationFactory
         $notice = match ((string) ($query['notice'] ?? '')) {
             'saved' => 'admin.saved',
             'invalid' => 'admin.invalid',
+            'timing' => 'admin.invalid_timing',
             'failed' => 'admin.action_failed',
             default => null,
         };
@@ -467,9 +468,16 @@ final readonly class PulseApplicationFactory
                 $state === PublicationState::Scheduled ? $this->formDate((string) ($body['publish_at'] ?? '')) : null,
                 $now,
             );
-        } catch (InvalidArgumentException) {
-            return $this->redirectToAdmin($request, $response, $slug, 'invalid');
-        } catch (DomainException) {
+        } catch (InvalidArgumentException $error) {
+            $this->logAdminEventFailure('create', $error->getMessage());
+            return $this->redirectToAdmin(
+                $request,
+                $response,
+                $slug,
+                $error->getMessage() === 'Event end must be later than event start.' ? 'timing' : 'invalid',
+            );
+        } catch (DomainException $error) {
+            $this->logAdminEventFailure('create', $error->getMessage());
             return $this->redirectToAdmin($request, $response, $slug, 'failed');
         }
 
@@ -508,9 +516,16 @@ final readonly class PulseApplicationFactory
                 'save' => null,
                 default => throw new InvalidArgumentException('Unknown event operation.'),
             };
-        } catch (InvalidArgumentException) {
-            return $this->redirectToAdmin($request, $response, $slug, 'invalid');
-        } catch (DomainException) {
+        } catch (InvalidArgumentException $error) {
+            $this->logAdminEventFailure('mutate', $error->getMessage());
+            return $this->redirectToAdmin(
+                $request,
+                $response,
+                $slug,
+                $error->getMessage() === 'Event end must be later than event start.' ? 'timing' : 'invalid',
+            );
+        } catch (DomainException $error) {
+            $this->logAdminEventFailure('mutate', $error->getMessage());
             return $this->redirectToAdmin($request, $response, $slug, 'failed');
         }
 
@@ -587,6 +602,13 @@ final readonly class PulseApplicationFactory
     {
         if (PHP_SAPI !== 'cli') {
             error_log('[pulse] Administrator mutation denied: ' . $reason . '.');
+        }
+    }
+
+    private function logAdminEventFailure(string $operation, string $reason): void
+    {
+        if (PHP_SAPI !== 'cli') {
+            error_log('[pulse] Administrator event ' . $operation . ' failed: ' . $reason . '.');
         }
     }
 
