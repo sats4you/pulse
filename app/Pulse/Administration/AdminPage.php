@@ -81,7 +81,7 @@ final class AdminPage
                 <meta name="robots" content="noindex,nofollow,noarchive">
                 <title>{$t('admin.heading')} · pulse</title>
                 <link rel="icon" href="/assets/sats4you-favicon.svg" type="image/svg+xml">
-                <link rel="stylesheet" href="/assets/pulse.css?v=20260816-controls1">
+                <link rel="stylesheet" href="/assets/pulse.css?v=20260816-controls2">
             </head>
             <body>
                 <main class="shell admin-shell">
