@@ -75,8 +75,8 @@ final readonly class PdoCredentialStore implements CredentialStore
                     admin_access_version = admin_access_version + 1,
                     admin_recovery_digest = :recovery_digest,
                     admin_recovery_version = admin_recovery_version + 1,
-                    admin_credentials_rotated_at = :rotated_at,
-                    updated_at = :rotated_at
+                    admin_credentials_rotated_at = :credentials_rotated_at,
+                    updated_at = :updated_at
                 WHERE id = UNHEX(:round_id)
                   AND public_slug = :slug
                   AND admin_access_version = :admin_version
@@ -86,7 +86,9 @@ final readonly class PdoCredentialStore implements CredentialStore
         );
         $statement->bindValue('admin_digest', $administratorDigest, PDO::PARAM_LOB);
         $statement->bindValue('recovery_digest', $recoveryDigest, PDO::PARAM_LOB);
-        $statement->bindValue('rotated_at', self::format($rotatedAt));
+        $timestamp = self::format($rotatedAt);
+        $statement->bindValue('credentials_rotated_at', $timestamp);
+        $statement->bindValue('updated_at', $timestamp);
         $statement->bindValue('round_id', self::normaliseId($expected->roundId));
         $statement->bindValue('slug', $expected->publicSlug);
         $statement->bindValue('admin_version', $expected->administratorVersion, PDO::PARAM_INT);

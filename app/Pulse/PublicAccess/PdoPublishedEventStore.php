@@ -26,15 +26,16 @@ final readonly class PdoPublishedEventStore implements PublishedEventStore
                 WHERE event.round_id = UNHEX(:round_id)
                   AND (
                     event.publication_state = 'published'
-                    OR (event.publication_state IN ('scheduled', 'cancelled') AND event.publish_at <= :now)
+                    OR (event.publication_state IN ('scheduled', 'cancelled') AND event.publish_at <= :publish_now)
                   )
-                  AND COALESCE(event.ends_at, DATE_ADD(event.starts_at, INTERVAL 6 HOUR)) >= :now
+                  AND COALESCE(event.ends_at, DATE_ADD(event.starts_at, INTERVAL 6 HOUR)) >= :active_now
                 ORDER BY event.starts_at ASC, event.created_at ASC
                 SQL,
         );
         $statement->execute([
             'round_id' => self::normaliseId($roundId),
-            'now' => self::formatDate($now),
+            'publish_now' => self::formatDate($now),
+            'active_now' => self::formatDate($now),
         ]);
 
         return array_map(self::map(...), $statement->fetchAll());
@@ -49,16 +50,17 @@ final readonly class PdoPublishedEventStore implements PublishedEventStore
                   AND event.public_id = UNHEX(:public_id)
                   AND (
                     event.publication_state = 'published'
-                    OR (event.publication_state IN ('scheduled', 'cancelled') AND event.publish_at <= :now)
+                    OR (event.publication_state IN ('scheduled', 'cancelled') AND event.publish_at <= :publish_now)
                   )
-                  AND COALESCE(event.ends_at, DATE_ADD(event.starts_at, INTERVAL 6 HOUR)) >= :now
+                  AND COALESCE(event.ends_at, DATE_ADD(event.starts_at, INTERVAL 6 HOUR)) >= :active_now
                 LIMIT 1
                 SQL,
         );
         $statement->execute([
             'round_id' => self::normaliseId($roundId),
             'public_id' => self::normaliseId($publicEventId),
-            'now' => self::formatDate($now),
+            'publish_now' => self::formatDate($now),
+            'active_now' => self::formatDate($now),
         ]);
         $row = $statement->fetch();
 

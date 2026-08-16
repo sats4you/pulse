@@ -54,7 +54,7 @@ final readonly class PdoRoundProvisioningStore implements RoundProvisioningStore
                         :recovery_digest,
                         1,
                         :created_at,
-                        :created_at
+                        :updated_at
                     )
                     SQL,
             );
@@ -65,7 +65,9 @@ final readonly class PdoRoundProvisioningStore implements RoundProvisioningStore
             $statement->bindValue('participant_digest', $participantDigest, PDO::PARAM_LOB);
             $statement->bindValue('administrator_digest', $administratorDigest, PDO::PARAM_LOB);
             $statement->bindValue('recovery_digest', $recoveryDigest, PDO::PARAM_LOB);
-            $statement->bindValue('created_at', $createdAt->setTimezone(new DateTimeZone('UTC'))->format('Y-m-d H:i:s.u'));
+            $timestamp = $createdAt->setTimezone(new DateTimeZone('UTC'))->format('Y-m-d H:i:s.u');
+            $statement->bindValue('created_at', $timestamp);
+            $statement->bindValue('updated_at', $timestamp);
             $statement->execute();
             $this->connection->commit();
         } catch (Throwable $error) {
