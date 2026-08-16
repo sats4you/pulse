@@ -32,3 +32,4 @@ Thumbs.db
 *.pfx
 credentials.json
 secrets.*
+/config/runtime.php

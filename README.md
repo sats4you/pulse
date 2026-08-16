@@ -49,7 +49,7 @@ After applying the database migration, the first round is provisioned once from 
 php bin/provision-round.php bern-bitcoin "Bern Monthly Bitcoin Meetup"
 ```
 
-The production web root must point to `public/`. Database configuration and cryptographic keys are supplied through environment variables; no real secret belongs in the repository. See [Operations](docs/OPERATIONS.md).
+The production web root must point to `public/`. Database configuration and cryptographic keys are supplied through environment variables or a Git-ignored runtime file outside that public directory; no real secret belongs in the repository. See [Operations](docs/OPERATIONS.md) and the [lima-city deployment guide](docs/DEPLOYMENT_LIMA_CITY.md).
 
 ## Documentation
 

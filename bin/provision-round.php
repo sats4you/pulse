@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Sats4you\Pulse\Platform\Database\ConnectionFactory;
+use Sats4you\Pulse\Platform\Config\RuntimeConfiguration;
 use Sats4you\Pulse\Platform\Security\SecretDigester;
 use Sats4you\Pulse\Platform\Security\SecretGenerator;
 use Sats4you\Pulse\Pulse\Credentials\PdoRoundProvisioningStore;
@@ -19,18 +20,14 @@ if ($argc !== 3) {
     exit(2);
 }
 
-$required = static function (string $name): string {
-    $value = getenv($name);
-    if ($value === false || $value === '') {
-        throw new RuntimeException('Fehlende Umgebungskonfiguration: ' . $name);
-    }
-
-    return $value;
-};
-
-$baseUrl = rtrim($required('APP_BASE_URL'), '/');
-$hmacKey = $required('APP_HMAC_KEY');
-$connection = ConnectionFactory::create($required('DB_DSN'), $required('DB_USER'), $required('DB_PASSWORD'));
+$configuration = RuntimeConfiguration::fromProjectRoot(dirname(__DIR__));
+$baseUrl = rtrim($configuration->required('APP_BASE_URL'), '/');
+$hmacKey = $configuration->required('APP_HMAC_KEY');
+$connection = ConnectionFactory::create(
+    $configuration->required('DB_DSN'),
+    $configuration->required('DB_USER'),
+    $configuration->required('DB_PASSWORD'),
+);
 $result = (new RoundProvisioningService(
     new PdoRoundProvisioningStore($connection),
     new SecretGenerator(),

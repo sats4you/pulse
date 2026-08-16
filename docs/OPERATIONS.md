@@ -9,11 +9,13 @@ Status: local implementation guide, 15 August 2026. This is not a production app
 - Apache with the document root set to `public/`, or an equivalent web server that forwards non-file routes to `public/index.php`;
 - Composer for dependency installation outside the public document root.
 
-Install dependencies with `composer install --no-dev --classmap-authoritative` and apply `database/migrations/001_create_pulse_tables.sql` to a dedicated database and least-privilege database user.
+Install dependencies with `composer install --no-dev --classmap-authoritative` and apply `database/migrations/001_create_pulse_tables.sql` to a dedicated database and least-privilege database user. The lima-city-specific sequence and target directories are documented in [DEPLOYMENT_LIMA_CITY.md](DEPLOYMENT_LIMA_CITY.md).
 
 ## Environment
 
-The required variables are documented in `.env.example`. `APP_HMAC_KEY` must contain at least 32 unpredictable bytes and must not be stored in the repository, database, web root, support messages or backups together with the database. Changing it invalidates stored access and RSVP digests.
+The required values are documented in `.env.example` and `config/runtime.example.php`. On lima-city, the real values are stored in `config/runtime.php` outside the `public/` web root; operating-system environment variables override the file when available. `APP_HMAC_KEY` must contain at least 32 unpredictable characters and must not be stored in the repository, database, public web root or support messages. Changing it invalidates stored access and RSVP digests.
+
+lima-city's encrypted webspace backups can include the non-public runtime file for up to 90 days. This accepted pilot boundary is stated in the privacy explanation. A restore therefore always requires maintenance mode followed by rotation of participant, administration and recovery credentials before reopening.
 
 The web server must use HTTPS in production. The application then marks access and RSVP cookies as `Secure`, `HttpOnly` and `SameSite=Strict`.
 
@@ -36,6 +38,8 @@ Run the following command at least once per day with the same database environme
 ```text
 php bin/pulse-retention.php
 ```
+
+On lima-city this is configured as a Shell-Cronjob with a dedicated `flock` lock file, not as a public URL endpoint.
 
 The command is idempotent. It outputs only success state and aggregate deletion counts. It must not be extended to output event identifiers, access links, RSVP secrets or other sensitive values.
 
