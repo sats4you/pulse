@@ -205,6 +205,16 @@ final class AdminPage
             || ($event->publicationState === PublicationState::Scheduled && !$scheduledIsVisible)
         ) {
             $actions .= $this->actionForm($translator, $locale, $slug, $event, 'publish', 'admin.publish', $csrfToken);
+            $actions .= $this->actionForm(
+                $translator,
+                $locale,
+                $slug,
+                $event,
+                'delete',
+                'admin.delete_event',
+                $csrfToken,
+                'admin.delete_event_confirm',
+            );
         }
         if (($event->publicationState === PublicationState::Published || $scheduledIsVisible)
             && $now < $event->details->timing->startsAt

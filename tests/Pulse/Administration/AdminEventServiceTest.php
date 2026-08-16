@@ -102,6 +102,49 @@ final class AdminEventServiceTest extends TestCase
         $service->openRsvps($this->administrator(), $event->publicId, $now->modify('+2 hours'));
     }
 
+    public function testDraftAndNotYetVisibleScheduledEventCanBeDeleted(): void
+    {
+        $now = new DateTimeImmutable('2026-08-15T12:00:00Z');
+        $store = new InMemoryAdminEventStore();
+        $service = new AdminEventService($store, new RetentionSchedule());
+        $details = new EventDetails('Termin', $now->modify('+10 days'), null, null, null);
+
+        $draft = $service->create($this->administrator(), $details, PublicationState::Draft, null, $now);
+        $scheduled = $service->create(
+            $this->administrator(),
+            $details,
+            PublicationState::Scheduled,
+            $now->modify('+1 day'),
+            $now,
+        );
+
+        $service->deleteUnpublished($this->administrator(), $draft->publicId, $now);
+        $service->deleteUnpublished($this->administrator(), $scheduled->publicId, $now);
+
+        self::assertSame([], $store->events);
+    }
+
+    public function testPublishedEventCannotBeDeletedManually(): void
+    {
+        $now = new DateTimeImmutable('2026-08-15T12:00:00Z');
+        $store = new InMemoryAdminEventStore();
+        $service = new AdminEventService($store, new RetentionSchedule());
+        $event = $service->create(
+            $this->administrator(),
+            new EventDetails('Termin', $now->modify('+10 days'), null, null, null),
+            PublicationState::Published,
+            null,
+            $now,
+        );
+
+        try {
+            $service->deleteUnpublished($this->administrator(), $event->publicId, $now);
+            self::fail('Published event deletion must be rejected.');
+        } catch (DomainException) {
+            self::assertArrayHasKey($event->publicId, $store->events);
+        }
+    }
+
     public function testParticipantCannotReadAdministration(): void
     {
         $service = new AdminEventService(new InMemoryAdminEventStore(), new RetentionSchedule());

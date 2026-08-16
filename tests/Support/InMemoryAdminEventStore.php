@@ -45,4 +45,15 @@ final class InMemoryAdminEventStore implements AdminEventStore
         }
         $this->events[$event->publicId] = $event;
     }
+
+    public function delete(string $roundId, string $publicEventId): bool
+    {
+        $event = $this->events[$publicEventId] ?? null;
+        if ($event === null || $event->roundId !== $roundId) {
+            return false;
+        }
+        unset($this->events[$publicEventId]);
+
+        return true;
+    }
 }

@@ -209,6 +209,21 @@ final readonly class AdminEventService
         return $this->create($grant, $event->details, PublicationState::Draft, null, $now);
     }
 
+    public function deleteUnpublished(AccessGrant $grant, string $publicEventId, DateTimeImmutable $now): void
+    {
+        $event = $this->required($grant, $publicEventId);
+        $canDelete = $event->publicationState === PublicationState::Draft
+            || ($event->publicationState === PublicationState::Scheduled
+                && $event->publishAt !== null
+                && $event->publishAt > $now);
+        if (!$canDelete || $event->attendanceCount !== 0) {
+            throw new DomainException('only_unpublished_event_can_be_deleted');
+        }
+        if (!$this->store->delete($event->roundId, $event->publicId)) {
+            throw new DomainException('event_not_found');
+        }
+    }
+
     private function required(AccessGrant $grant, string $publicEventId): AdminEvent
     {
         $this->assertAdministrator($grant);

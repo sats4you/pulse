@@ -70,6 +70,8 @@
   "admin.close_rsvp": "Clore les participations",
   "admin.close_rsvp_confirm": "Vraiment clore les nouvelles participations ? Tu pourras les rouvrir avant le début de l’événement.",
   "admin.open_rsvp": "Rouvrir les participations",
+  "admin.delete_event": "Supprimer l’événement",
+  "admin.delete_event_confirm": "Supprimer définitivement cet événement non publié ? Cette action est irréversible.",
   "admin.access_eyebrow": "pulse · gestion secrète",
   "admin.access_heading": "Ouverture de l’accès de gestion",
   "admin.access_explanation": "Ce lien secret ouvre la gestion des événements sans compte utilisateur.",

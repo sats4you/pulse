@@ -169,6 +169,16 @@ final readonly class SqlitePulseStore implements AttendanceStore, PublishedEvent
         $statement->execute($parameters);
     }
 
+    public function delete(string $roundId, string $publicEventId): bool
+    {
+        $statement = $this->connection->prepare(
+            'DELETE FROM events WHERE round_id = :round_id AND public_id = :public_id',
+        );
+        $statement->execute(['round_id' => $roundId, 'public_id' => $publicEventId]);
+
+        return $statement->rowCount() === 1;
+    }
+
     public function findParticipantGrant(string $publicSlug, string $presentedDigest): ?AccessGrant
     {
         $statement = $this->connection->prepare('SELECT * FROM rounds WHERE slug = :slug');

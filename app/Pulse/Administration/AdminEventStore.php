@@ -14,4 +14,6 @@ interface AdminEventStore
     public function insert(AdminEvent $event): void;
 
     public function save(AdminEvent $event): void;
+
+    public function delete(string $roundId, string $publicEventId): bool;
 }

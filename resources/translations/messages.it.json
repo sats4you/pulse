@@ -70,6 +70,8 @@
   "admin.close_rsvp": "Chiudi le adesioni",
   "admin.close_rsvp_confirm": "Vuoi davvero chiudere le nuove adesioni? Potrai riaprirle prima dell’inizio dell’evento.",
   "admin.open_rsvp": "Riapri le adesioni",
+  "admin.delete_event": "Elimina l’evento",
+  "admin.delete_event_confirm": "Eliminare definitivamente questo evento non pubblicato? L’azione non può essere annullata.",
   "admin.access_eyebrow": "pulse · gestione segreta",
   "admin.access_heading": "Apertura dell’accesso di gestione",
   "admin.access_explanation": "Questo link segreto apre la gestione degli eventi senza account utente.",

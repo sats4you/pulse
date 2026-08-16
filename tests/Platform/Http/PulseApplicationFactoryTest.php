@@ -185,6 +185,44 @@ final class PulseApplicationFactoryTest extends TestCase
         self::assertSame(303, $open->getStatusCode());
         self::assertNull($adminStore->events[$createdEvent->publicId]->rsvpClosedAt);
 
+        $publishedDelete = $app->handle(
+            $requests->createServerRequest(
+                'POST',
+                '/pulse/manage/r/' . self::SLUG . '/events/' . $createdEvent->publicId,
+            )
+                ->withHeader('Origin', self::ORIGIN)
+                ->withParsedBody(['csrf' => $matches[1], 'lang' => 'de', 'intent' => 'delete'])
+                ->withCookieParams(['pulse_admin' => $adminCookie]),
+        );
+        self::assertSame(303, $publishedDelete->getStatusCode());
+        self::assertStringContainsString('notice=failed', $publishedDelete->getHeaderLine('Location'));
+        self::assertArrayHasKey($createdEvent->publicId, $adminStore->events);
+
+        $draftBody = array_merge($createBody, ['intent' => 'save', 'title' => 'Unveröffentlichter Entwurf']);
+        $draftCreate = $app->handle(
+            $requests->createServerRequest('POST', '/pulse/manage/r/' . self::SLUG . '/events')
+                ->withHeader('Origin', self::ORIGIN)
+                ->withParsedBody($draftBody)
+                ->withCookieParams(['pulse_admin' => $adminCookie]),
+        );
+        self::assertSame(303, $draftCreate->getStatusCode());
+        $draft = array_values(array_filter(
+            $adminStore->events,
+            static fn ($event): bool => $event->publicationState === PublicationState::Draft,
+        ))[0];
+
+        $draftDelete = $app->handle(
+            $requests->createServerRequest(
+                'POST',
+                '/pulse/manage/r/' . self::SLUG . '/events/' . $draft->publicId,
+            )
+                ->withHeader('Origin', self::ORIGIN)
+                ->withParsedBody(['csrf' => $matches[1], 'lang' => 'de', 'intent' => 'delete'])
+                ->withCookieParams(['pulse_admin' => $adminCookie]),
+        );
+        self::assertSame(303, $draftDelete->getStatusCode());
+        self::assertArrayNotHasKey($draft->publicId, $adminStore->events);
+
         $withoutCsrf = $app->handle(
             $requests->createServerRequest('POST', '/pulse/manage/r/' . self::SLUG . '/events')
                 ->withHeader('Origin', self::ORIGIN)

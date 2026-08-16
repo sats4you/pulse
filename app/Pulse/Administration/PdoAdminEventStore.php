@@ -97,6 +97,22 @@ final readonly class PdoAdminEventStore implements AdminEventStore
         }
     }
 
+    public function delete(string $roundId, string $publicEventId): bool
+    {
+        $statement = $this->connection->prepare(
+            'DELETE FROM coordination_events WHERE round_id = UNHEX(:round_id) AND public_id = UNHEX(:public_id)',
+        );
+        $statement->execute([
+            'round_id' => self::normaliseId($roundId),
+            'public_id' => self::normaliseId($publicEventId),
+        ]);
+        if ($statement->rowCount() > 1) {
+            throw new \UnexpectedValueException('More than one event was deleted.');
+        }
+
+        return $statement->rowCount() === 1;
+    }
+
     private function baseQuery(): string
     {
         return <<<'SQL'
