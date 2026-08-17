@@ -498,7 +498,9 @@ final readonly class PulseApplicationFactory
         $now = new DateTimeImmutable();
 
         try {
-            if (in_array($intent, ['save', 'publish', 'schedule'], true)) {
+            $updatesEventDetails = in_array($intent, ['save', 'schedule'], true)
+                || ($intent === 'publish' && array_key_exists('title', $body));
+            if ($updatesEventDetails) {
                 $this->adminEvents->update($grant, $eventId, $this->eventDetails($body), $now);
             }
             match ($intent) {

@@ -292,17 +292,42 @@ final class PulseApplicationFactoryTest extends TestCase
         self::assertStringContainsString('Veröffentlichung geplant', (string) $scheduledList->getBody());
         self::assertStringContainsString('Geplante Veröffentlichung', (string) $scheduledList->getBody());
 
-        $scheduledDelete = $app->handle(
+        $scheduledPublish = $app->handle(
             $requests->createServerRequest(
                 'POST',
                 '/pulse/manage/r/' . self::SLUG . '/events/' . $scheduled->publicId,
+            )
+                ->withHeader('Origin', self::ORIGIN)
+                ->withParsedBody(['csrf' => $matches[1], 'lang' => 'de', 'intent' => 'publish'])
+                ->withCookieParams(['pulse_admin' => $adminCookie]),
+        );
+        self::assertSame(303, $scheduledPublish->getStatusCode());
+        self::assertStringContainsString('notice=saved', $scheduledPublish->getHeaderLine('Location'));
+        self::assertSame(PublicationState::Published, $adminStore->events[$scheduled->publicId]->publicationState);
+
+        $scheduledDeleteCreate = $app->handle(
+            $requests->createServerRequest('POST', '/pulse/manage/r/' . self::SLUG . '/events')
+                ->withHeader('Origin', self::ORIGIN)
+                ->withParsedBody(array_merge($scheduledBody, ['title' => 'Geplanter Löschtest']))
+                ->withCookieParams(['pulse_admin' => $adminCookie]),
+        );
+        self::assertSame(303, $scheduledDeleteCreate->getStatusCode());
+        $scheduledForDeletion = array_values(array_filter(
+            $adminStore->events,
+            static fn ($event): bool => $event->publicationState === PublicationState::Scheduled,
+        ))[0];
+
+        $scheduledDelete = $app->handle(
+            $requests->createServerRequest(
+                'POST',
+                '/pulse/manage/r/' . self::SLUG . '/events/' . $scheduledForDeletion->publicId,
             )
                 ->withHeader('Origin', self::ORIGIN)
                 ->withParsedBody(['csrf' => $matches[1], 'lang' => 'de', 'intent' => 'delete'])
                 ->withCookieParams(['pulse_admin' => $adminCookie]),
         );
         self::assertSame(303, $scheduledDelete->getStatusCode());
-        self::assertArrayNotHasKey($scheduled->publicId, $adminStore->events);
+        self::assertArrayNotHasKey($scheduledForDeletion->publicId, $adminStore->events);
 
         $withoutCsrf = $app->handle(
             $requests->createServerRequest('POST', '/pulse/manage/r/' . self::SLUG . '/events')
