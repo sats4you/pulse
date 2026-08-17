@@ -55,6 +55,7 @@ final class AttendanceServiceTest extends TestCase
         self::assertFalse($result->alreadyJoined);
         self::assertSame(43, strlen($result->participantSecret));
         self::assertCount(1, $this->store->commitments[self::EVENT_ID]);
+        self::assertSame('join', $this->store->notificationChanges[0]['changeType']);
     }
 
     public function testRepeatedJoinWithSameSecretIsIdempotent(): void
@@ -71,6 +72,7 @@ final class AttendanceServiceTest extends TestCase
         self::assertSame($first->participantSecret, $second->participantSecret);
         self::assertSame(1, $second->count);
         self::assertCount(1, $this->store->commitments[self::EVENT_ID]);
+        self::assertCount(1, $this->store->notificationChanges);
     }
 
     public function testSecretForOneEventCannotWithdrawFromAnotherEvent(): void
@@ -96,6 +98,7 @@ final class AttendanceServiceTest extends TestCase
         self::assertFalse($result->withdrawn);
         self::assertSame(0, $result->count);
         self::assertSame(1, $this->store->countCommitments(self::EVENT_ID));
+        self::assertCount(1, $this->store->notificationChanges);
     }
 
     public function testWithdrawalDeletesCommitmentImmediately(): void
@@ -111,6 +114,7 @@ final class AttendanceServiceTest extends TestCase
         self::assertTrue($result->withdrawn);
         self::assertSame(0, $result->count);
         self::assertCount(0, $this->store->commitments[self::EVENT_ID]);
+        self::assertSame(['join', 'withdraw'], array_column($this->store->notificationChanges, 'changeType'));
     }
 
     public function testWrongRoundCannotAccessEvent(): void

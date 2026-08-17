@@ -14,8 +14,8 @@ This repository contains the release candidate for the first closed pilot. The a
 - participant access, upcoming-event view, anonymous RSVP and withdrawal are implemented;
 - secret administration access and event creation, editing, scheduling, publication, cancellation, duplication and RSVP closure are implemented;
 - recovery-code rotation, participant-link rotation and one-time round provisioning are implemented;
-- the four-language technical privacy explanation and the primary-data retention job are implemented;
-- automated checks currently cover the core HTTP, authorisation, event, RSVP, CSRF, translation and retention rules;
+- the four-language technical privacy explanation, primary-data retention job and anonymous bundled administrator notifications are implemented;
+- automated checks currently cover the core HTTP, authorisation, event, RSVP, notification, CSRF, translation and retention rules;
 - not independently audited;
 - deployed and tested on a non-production hostname;
 - not yet open for other groups;
@@ -34,7 +34,8 @@ The public source must match the version operated on sats4you.ch. Real access li
 - event-specific RSVP secrets that do not create a cross-event participant profile;
 - clear limits instead of absolute anonymity or security promises;
 - minimal data, documented deletion and no advertising analytics;
-- no calendar integration in the pilot; it may be reconsidered if users request it.
+- administrator email notifications contain only bundled RSVP changes and the current aggregate count, never participant data or access links;
+- no calendar integration in the pilot; it may be reconsidered if users request it;
 - complete user interface in Deutsch, Français, Italiano and Rumantsch Grischun, with full language names in the selector.
 
 ## Local verification

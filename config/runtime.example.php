@@ -11,4 +11,7 @@ return [
     'DB_DSN' => 'mysql:host=mysql.lima-city.de;dbname=replace-me;charset=utf8mb4',
     'DB_USER' => 'replace-me',
     'DB_PASSWORD' => 'replace-me',
+    'NOTIFICATION_RECIPIENT' => 'admin@example.org',
+    'NOTIFICATION_FROM' => 'pulse@example.org',
+    'NOTIFICATION_LOCALE' => 'de',
 ];

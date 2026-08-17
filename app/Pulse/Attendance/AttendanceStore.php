@@ -25,4 +25,10 @@ interface AttendanceStore
     public function deleteCommitment(string $eventId, string $secretDigest): bool;
 
     public function countCommitments(string $eventId): int;
+
+    public function recordNotificationChange(
+        string $eventId,
+        string $changeType,
+        DateTimeImmutable $occurredAt,
+    ): void;
 }

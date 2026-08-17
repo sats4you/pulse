@@ -9,7 +9,7 @@ Status: local implementation guide, 15 August 2026. This is not a production app
 - Apache with the document root set to `public/`, or an equivalent web server that forwards non-file routes to `public/index.php`;
 - Composer for dependency installation outside the public document root.
 
-Install dependencies with `composer install --no-dev --classmap-authoritative` and apply `database/migrations/001_create_pulse_tables.sql` to a dedicated database and least-privilege database user. The lima-city-specific sequence and target directories are documented in [DEPLOYMENT_LIMA_CITY.md](DEPLOYMENT_LIMA_CITY.md).
+Install dependencies with `composer install --no-dev --classmap-authoritative` and apply all numbered SQL files in `database/migrations/` in order to a dedicated database and least-privilege database user. The lima-city-specific sequence and target directories are documented in [DEPLOYMENT_LIMA_CITY.md](DEPLOYMENT_LIMA_CITY.md).
 
 ## Environment
 
@@ -18,6 +18,8 @@ The required values are documented in `.env.example` and `config/runtime.example
 lima-city's encrypted webspace backups can include the non-public runtime file for up to 90 days. This accepted pilot boundary is stated in the privacy explanation. A restore therefore always requires maintenance mode followed by rotation of participant, administration and recovery credentials before reopening.
 
 The web server must use HTTPS in production. The application then marks access and RSVP cookies as `Secure`, `HttpOnly` and `SameSite=Strict`.
+
+`NOTIFICATION_RECIPIENT`, `NOTIFICATION_FROM` and `NOTIFICATION_LOCALE` configure the operator notification. They must only exist in the non-public runtime configuration. The sender mailbox must be authorised for the hosting mail function; the recipient may be hosted by another provider. The visible privacy explanation must name the actual mail-provider data flow.
 
 ## Einmalige Einrichtung der Pilotgruppe
 
@@ -44,6 +46,16 @@ On lima-city this is configured as a Shell-Cronjob with a dedicated `flock` lock
 The command is idempotent. It outputs only success state and aggregate deletion counts. It must not be extended to output event identifiers, access links, RSVP secrets or other sensitive values.
 
 The job deletes due active RSVP records and due events from the primary database. Foreign-key cascading removes any remaining RSVP records belonging to a deleted event.
+
+## Bundled administrator notification
+
+Run the following Shell-Cronjob every five minutes:
+
+```text
+php bin/pulse-notifications.php
+```
+
+Each actual join or withdrawal creates an anonymous event-specific queue row. The dispatcher waits until an event has had no further change for five minutes, then sends one email containing only the event, bundled join/withdraw counts and current aggregate count. It deletes sent rows immediately. Failed rows are retried and expire after seven days. Command output contains only aggregate delivery counters; never extend it with addresses, event data, access links or RSVP secrets.
 
 ## Hosting gate
 

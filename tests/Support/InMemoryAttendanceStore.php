@@ -18,6 +18,9 @@ final class InMemoryAttendanceStore implements AttendanceStore
 
     public int $transactionCount = 0;
 
+    /** @var list<array{eventId: string, changeType: string, occurredAt: DateTimeImmutable}> */
+    public array $notificationChanges = [];
+
     public function transaction(callable $operation): mixed
     {
         ++$this->transactionCount;
@@ -61,5 +64,13 @@ final class InMemoryAttendanceStore implements AttendanceStore
     public function countCommitments(string $eventId): int
     {
         return count($this->commitments[$eventId] ?? []);
+    }
+
+    public function recordNotificationChange(
+        string $eventId,
+        string $changeType,
+        DateTimeImmutable $occurredAt,
+    ): void {
+        $this->notificationChanges[] = compact('eventId', 'changeType', 'occurredAt');
     }
 }

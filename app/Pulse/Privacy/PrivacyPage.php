@@ -77,6 +77,7 @@ final class PrivacyPage
                             <div role="row"><strong role="rowheader">{$t('privacy.flow_admin_title')}</strong><span role="cell">{$t('privacy.flow_admin_text')}</span></div>
                             <div role="row"><strong role="rowheader">{$t('privacy.flow_browser_title')}</strong><span role="cell">{$t('privacy.flow_browser_text')}</span></div>
                             <div role="row"><strong role="rowheader">{$t('privacy.flow_server_title')}</strong><span role="cell">{$t('privacy.flow_server_text')}</span></div>
+                            <div role="row"><strong role="rowheader">{$t('privacy.flow_mail_title')}</strong><span role="cell">{$t('privacy.flow_mail_text')}</span></div>
                             <div role="row"><strong role="rowheader">{$t('privacy.flow_host_title')}</strong><span role="cell">{$t('privacy.flow_host_text')}</span></div>
                         </div>
                     </section>

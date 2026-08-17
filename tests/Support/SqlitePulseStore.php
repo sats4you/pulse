@@ -104,6 +104,23 @@ final readonly class SqlitePulseStore implements AttendanceStore, PublishedEvent
         return (int) $statement->fetchColumn();
     }
 
+    public function recordNotificationChange(
+        string $eventId,
+        string $changeType,
+        DateTimeImmutable $occurredAt,
+    ): void {
+        $statement = $this->connection->prepare(
+            'INSERT INTO notification_changes (id, event_id, change_type, occurred_at, delete_at) VALUES (:id, :event_id, :change_type, :occurred_at, :delete_at)',
+        );
+        $statement->execute([
+            'id' => bin2hex(random_bytes(16)),
+            'event_id' => $eventId,
+            'change_type' => $changeType,
+            'occurred_at' => self::format($occurredAt),
+            'delete_at' => self::format($occurredAt->modify('+7 days')),
+        ]);
+    }
+
     public function listUpcoming(string $roundId, DateTimeImmutable $now): array
     {
         $statement = $this->connection->prepare(

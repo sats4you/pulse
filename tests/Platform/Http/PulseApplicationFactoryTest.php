@@ -545,6 +545,7 @@ final class PulseApplicationFactoryTest extends TestCase
         $connection->exec('CREATE TABLE rounds (id TEXT PRIMARY KEY, slug TEXT UNIQUE, participant_digest BLOB, access_version INTEGER, admin_digest BLOB, admin_version INTEGER, recovery_digest BLOB, recovery_version INTEGER)');
         $connection->exec('CREATE TABLE events (id TEXT PRIMARY KEY, public_id TEXT UNIQUE, round_id TEXT, title TEXT, starts_at TEXT, ends_at TEXT, location TEXT, note TEXT, publication_state TEXT, publish_at TEXT, rsvp_closed_at TEXT, material_changed_at TEXT)');
         $connection->exec('CREATE TABLE attendance (event_id TEXT, digest BLOB, created_at TEXT, delete_at TEXT, UNIQUE(event_id, digest))');
+        $connection->exec('CREATE TABLE notification_changes (id TEXT PRIMARY KEY, event_id TEXT, change_type TEXT, occurred_at TEXT, delete_at TEXT)');
 
         $digester = new SecretDigester(str_repeat('h', 32));
         $now = new DateTimeImmutable('now', new DateTimeZone('UTC'));

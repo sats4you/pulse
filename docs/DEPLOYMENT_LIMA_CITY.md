@@ -32,7 +32,7 @@ Die Anwendung inklusive der mit `composer install --no-dev --classmap-authoritat
 
 ## 2. Datenbank
 
-In der lima-city-Verwaltung eine eigene MySQL-Datenbank und einen ausschliesslich dafür verwendeten Datenbankbenutzer anlegen. Danach `database/migrations/001_create_pulse_tables.sql` einmal über phpMyAdmin oder die MySQL-Konsole importieren.
+In der lima-city-Verwaltung eine eigene MySQL-Datenbank und einen ausschliesslich dafür verwendeten Datenbankbenutzer anlegen. Danach alle nummerierten Dateien in `database/migrations/` in aufsteigender Reihenfolge einmal über phpMyAdmin oder die MySQL-Konsole importieren. Bei einer bestehenden Installation wird nur die jeweils neue Migration angewendet.
 
 Der Benutzer benötigt für den laufenden Pilot nur Rechte auf dieser Datenbank. Keine Rechte auf Datenbanken anderer Websites vergeben.
 
@@ -41,6 +41,8 @@ Der Benutzer benötigt für den laufenden Pilot nur Rechte auf dieser Datenbank.
 `config/runtime.example.php` auf dem Server als `config/runtime.php` kopieren und alle Platzhalter ersetzen. Die Datei liegt ausserhalb von `public`, ist in `.gitignore` ausgeschlossen und darf nie in GitHub, Supporttickets oder Chatnachrichten eingefügt werden.
 
 Für `APP_HMAC_KEY` mindestens 32 zufällige Zeichen verwenden. Dieser Schlüssel ist nicht Teilnehmer-, Verwaltungs- oder Wiederherstellungscode. Ein Wechsel macht sämtliche gespeicherten Zugangs- und Zusageprüfwerte ungültig.
+
+Für die gebündelte Betreiberbenachrichtigung zusätzlich `NOTIFICATION_RECIPIENT`, `NOTIFICATION_FROM` und `NOTIFICATION_LOCALE` setzen. Die Werte bleiben in `config/runtime.php` und dürfen nicht in Repository oder Kommandoausgaben erscheinen.
 
 lima-city sichert Webspace und Datenbanken gemäss veröffentlichter Hostingbeschreibung. Dadurch kann auch die nicht öffentliche Laufzeitkonfiguration bis zu 90 Tage in verschlüsselten Betreiberbackups verbleiben. Das ist eine akzeptierte und in der Datenschutzerklärung offengelegte Pilotgrenze. Nach jeder Wiederherstellung bleibt die in `docs/OPERATIONS.md` beschriebene Rotation aller drei Gruppenzugänge zwingend.
 
@@ -64,6 +66,16 @@ cd <absoluter-pfad>/pulse && flock -n ~/.pulse-retention.lock php bin/pulse-rete
 
 Der Job ist idempotent und gibt nur aggregierte Löschzahlen aus. Für diesen Pilot wird kein öffentlich erreichbarer URL-Cronjob verwendet.
 
+## 5a. Gebündelte Betreiberbenachrichtigung
+
+Einen zweiten **Shell-Cronjob** alle fünf Minuten anlegen:
+
+```text
+cd <absoluter-pfad>/pulse && php bin/pulse-notifications.php
+```
+
+Der Dispatcher verwendet selbst eine MySQL-Sperre gegen parallele Läufe. Er wartet pro Termin fünf Minuten seit der letzten Änderung, bündelt An- und Abmeldungen und löscht erfolgreich versendete Warteschlangenzeilen sofort. Nicht zustellbare Zeilen werden erneut versucht und nach spätestens sieben Tagen gelöscht. Die Ausgabe enthält nur aggregierte Zähler.
+
 ## 6. Einmalige Gruppeneinrichtung
 
 Dieser Schritt wird erst ausgeführt, wenn Andreas die einmalige Ausgabe unmittelbar sicher speichern kann:
@@ -84,7 +96,8 @@ Nach der Einrichtung:
 4. Einen Testtermin erstellen, veröffentlichen, zusagen und zurückziehen.
 5. Sicherstellen, dass weder URL-Fragmente noch Geheimnisse in lima-city-Protokollen erscheinen.
 6. Den Löschjob einmal manuell ausführen und nur die aggregierte Erfolgsausgabe kontrollieren.
-7. Erst danach den Teilnehmerlink an die Pilotgruppe weitergeben.
+7. Den Benachrichtigungsjob bei leerer Warteschlange einmal manuell ausführen; es darf keine E-Mail versendet werden und die Ausgabe muss null versendete Meldungen zeigen.
+8. Erst danach den Teilnehmerlink an die Pilotgruppe weitergeben.
 
 ## Noch ausstehende Freigabepunkte
 

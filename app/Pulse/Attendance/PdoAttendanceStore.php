@@ -134,6 +134,31 @@ final readonly class PdoAttendanceStore implements AttendanceStore
         return (int) $statement->fetchColumn();
     }
 
+    public function recordNotificationChange(
+        string $eventId,
+        string $changeType,
+        DateTimeImmutable $occurredAt,
+    ): void {
+        if (!in_array($changeType, ['join', 'withdraw'], true)) {
+            throw new \InvalidArgumentException('Unsupported attendance notification change type.');
+        }
+
+        $statement = $this->connection->prepare(
+            <<<'SQL'
+                INSERT INTO attendance_notification_changes
+                    (id, event_id, change_type, occurred_at, delete_at)
+                VALUES
+                    (:id, UNHEX(:event_id), :change_type, :occurred_at, :delete_at)
+                SQL,
+        );
+        $statement->bindValue('id', random_bytes(16), PDO::PARAM_LOB);
+        $statement->bindValue('event_id', self::normaliseId($eventId));
+        $statement->bindValue('change_type', $changeType);
+        $statement->bindValue('occurred_at', self::formatDate($occurredAt));
+        $statement->bindValue('delete_at', self::formatDate($occurredAt->modify('+7 days')));
+        $statement->execute();
+    }
+
     private static function normaliseId(string $id): string
     {
         $normalised = strtolower(str_replace('-', '', $id));

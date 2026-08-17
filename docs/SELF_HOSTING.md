@@ -20,13 +20,13 @@ Node.js is not required in production.
    composer install --no-dev --classmap-authoritative
    ```
 
-2. Create a dedicated database and a least-privilege database user. Apply:
+2. Create a dedicated database and a least-privilege database user. Apply every numbered file in `database/migrations/` in ascending order, starting with:
 
    ```text
    database/migrations/001_create_pulse_tables.sql
    ```
 
-3. Copy `config/runtime.example.php` to `config/runtime.php`. Keep the real file outside the public document root and outside Git. Set the database values, the HTTPS `APP_BASE_URL` and an unpredictable `APP_HMAC_KEY` of at least 32 characters.
+3. Copy `config/runtime.example.php` to `config/runtime.php`. Keep the real file outside the public document root and outside Git. Set the database values, the HTTPS `APP_BASE_URL`, an unpredictable `APP_HMAC_KEY` of at least 32 characters, and the notification recipient, sender and locale. Adapt the visible privacy explanation to the actual mail provider.
 
 4. Point the web server document root to `public/`. Requests for non-existing files must be forwarded to `public/index.php`. Do not expose the repository root, `config/`, `vendor/`, `database/` or `bin/` directly.
 
@@ -51,6 +51,14 @@ Node.js is not required in production.
    ```
 
    Use a scheduler that prevents overlapping runs. The command is idempotent and reports only aggregate deletion counts.
+
+8. Run the anonymous administrator-notification dispatcher every five minutes:
+
+   ```text
+   php bin/pulse-notifications.php
+   ```
+
+   The database lock prevents overlapping dispatchers. Successful queue rows are removed immediately; repeated delivery failures expire after seven days. The sender must be authorised by the hosting mail system.
 
 ## Operational responsibilities
 

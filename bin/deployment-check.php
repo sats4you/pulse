@@ -42,7 +42,7 @@ try {
     );
     $connection->query('SELECT 1');
 
-    foreach (['coordination_rounds', 'coordination_events', 'attendance_commitments'] as $table) {
+    foreach (['coordination_rounds', 'coordination_events', 'attendance_commitments', 'attendance_notification_changes'] as $table) {
         $statement = $connection->prepare(
             'SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = :table'
         );
@@ -50,6 +50,15 @@ try {
         if ((int) $statement->fetchColumn() !== 1) {
             $errors[] = "Datenbanktabelle fehlt: {$table}.";
         }
+    }
+
+    foreach (['NOTIFICATION_RECIPIENT', 'NOTIFICATION_FROM'] as $mailSetting) {
+        if (filter_var($configuration->required($mailSetting), FILTER_VALIDATE_EMAIL) === false) {
+            $errors[] = "Ungültige E-Mail-Konfiguration: {$mailSetting}.";
+        }
+    }
+    if (!in_array($configuration->required('NOTIFICATION_LOCALE'), ['de', 'fr', 'it', 'rm'], true)) {
+        $errors[] = 'NOTIFICATION_LOCALE muss de, fr, it oder rm sein.';
     }
 } catch (Throwable) {
     $errors[] = 'Konfiguration oder Datenbankverbindung ist nicht bereit. Details stehen nur in der lokalen Serverausgabe.';

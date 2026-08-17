@@ -63,6 +63,7 @@ foreach (['created_at', 'updated_at', 'delete_at'] as $column) {
     }
 }
 $connection->exec('CREATE TABLE IF NOT EXISTS attendance (event_id TEXT, digest BLOB, created_at TEXT, delete_at TEXT, UNIQUE(event_id, digest))');
+$connection->exec('CREATE TABLE IF NOT EXISTS notification_changes (id TEXT PRIMARY KEY, event_id TEXT, change_type TEXT, occurred_at TEXT, delete_at TEXT)');
 
 $digester = new SecretDigester(str_repeat('h', 32));
 if ((int) $connection->query('SELECT COUNT(*) FROM rounds')->fetchColumn() === 0) {

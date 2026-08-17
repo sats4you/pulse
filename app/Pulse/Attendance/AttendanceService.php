@@ -62,6 +62,7 @@ final readonly class AttendanceService
                 $now,
                 $this->retention->attendanceDeleteAt($event->timing),
             );
+            $this->store->recordNotificationChange($eventId, 'join', $now);
 
             return new JoinResult(
                 $participantSecret,
@@ -92,6 +93,9 @@ final readonly class AttendanceService
                 $eventId,
                 $this->secretDigester->digest($participantSecret),
             );
+            if ($withdrawn) {
+                $this->store->recordNotificationChange($eventId, 'withdraw', $now);
+            }
 
             return new WithdrawResult($this->store->countCommitments($eventId), $withdrawn);
         });
