@@ -296,10 +296,25 @@ summary { cursor: pointer; font-weight: 700; }
 .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .date-time-field { min-width: 0; margin: 13px 0 0; padding: 0; border: 0; }
 .date-time-field legend { padding: 0; color: var(--muted); font-size: .86rem; font-weight: 700; }
-.date-time-inputs { display: grid; grid-template-columns: minmax(125px, 2fr) minmax(82px, .75fr) minmax(82px, .75fr); gap: 8px; }
+.date-time-inputs { display: grid; grid-template-columns: minmax(125px, 2fr) minmax(92px, .75fr) minmax(92px, .75fr); gap: 8px; }
 .date-time-inputs label { min-width: 0; margin-top: 7px; }
 .date-time-inputs label span { font-size: .72rem; font-weight: 400; }
-.date-time-inputs select { min-width: 82px; max-width: none; padding: 10px 34px 10px 12px; }
+.date-time-inputs select {
+  min-width: 92px;
+  max-width: none;
+  padding: 10px 36px 10px 12px;
+  appearance: none;
+  -webkit-appearance: none;
+  background-color: var(--surface);
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--text) 50%),
+    linear-gradient(135deg, var(--text) 50%, transparent 50%);
+  background-position:
+    calc(100% - 16px) calc(50% - 2px),
+    calc(100% - 11px) calc(50% - 2px);
+  background-repeat: no-repeat;
+  background-size: 5px 5px;
+}
 .field-help { margin: 7px 0 0; color: #9c9282; font-size: .78rem; }
 .form-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 18px; }
 .form-actions .secondary,
