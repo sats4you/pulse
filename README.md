@@ -8,7 +8,7 @@ The first closed pilot is intended for **Bern Monthly Bitcoin Meetup**.
 
 ## Current status
 
-This repository contains the release candidate for the first closed pilot. The application is installed on a private test hostname; the production domain is only switched after the documented release checks.
+This repository contains the source operated for the first pilot at [sats4you.ch/pulse](https://sats4you.ch/pulse). The production installation passed the documented release checks on 17 August 2026.
 
 - closed pilot implementation started on 15 August 2026;
 - participant access, upcoming-event view, anonymous RSVP and withdrawal are implemented;
@@ -17,11 +17,11 @@ This repository contains the release candidate for the first closed pilot. The a
 - the four-language technical privacy explanation, primary-data retention job and anonymous bundled administrator notifications are implemented;
 - automated checks currently cover the core HTTP, authorisation, event, RSVP, notification, CSRF, translation and retention rules;
 - not independently audited;
-- deployed and tested on a non-production hostname;
+- deployed and tested on the production domain;
 - not yet open for other groups;
 - no real access links, secrets or participant data belong in this repository;
 - the closed pilot is designed for lima-city's published 90-day backup and infrastructure-log limits;
-- the final production-domain, log and clean-data checks remain before invitations are distributed; the data-processing agreement with lima-city is complete.
+- the production-domain, log and clean-data checks are complete; the data-processing agreement with lima-city is complete.
 
 The public source must match the version operated on sats4you.ch. Real access links, secrets, production configuration and participant data are never part of the repository.
 
