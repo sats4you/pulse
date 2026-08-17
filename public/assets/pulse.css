@@ -250,6 +250,15 @@ summary { cursor: pointer; font-weight: 700; }
 .admin-title { display: flex; align-items: flex-end; justify-content: space-between; gap: 18px; }
 .admin-title h1 { font-size: clamp(2.2rem, 7vw, 3.6rem); }
 .admin-title .lead { margin-bottom: 0; }
+.admin-title-actions { display: flex; flex: 0 0 auto; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 9px; }
+.sort-events {
+  padding: 11px 13px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  color: var(--text);
+  font-weight: 700;
+  text-decoration: none;
+}
 .new-event {
   flex: 0 0 auto;
   padding: 12px 15px;
@@ -292,6 +301,7 @@ summary { cursor: pointer; font-weight: 700; }
 .editor textarea:focus-visible,
 .editor select:focus-visible,
 .new-event:focus-visible,
+.sort-events:focus-visible,
 .link-button:focus-visible { outline: 3px solid var(--text); outline-offset: 3px; }
 .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .date-time-field { min-width: 0; margin: 13px 0 0; padding: 0; border: 0; }
@@ -383,7 +393,7 @@ summary { cursor: pointer; font-weight: 700; }
   .event-card-head { grid-template-columns: 1fr; }
   .count { display: flex; align-items: baseline; gap: 8px; min-width: 0; text-align: left; }
   .admin-title { align-items: stretch; flex-direction: column; }
-  .new-event { align-self: flex-start; }
+  .admin-title-actions { align-items: flex-start; justify-content: flex-start; }
   .form-grid { grid-template-columns: 1fr; }
   .privacy-table > div { grid-template-columns: 1fr; gap: 5px; }
 }

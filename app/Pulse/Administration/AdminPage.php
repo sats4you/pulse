@@ -23,6 +23,7 @@ final class AdminPage
         string $groupName,
         string $publicSlug,
         array $events,
+        string $sortDirection,
         ?AdminEvent $editing,
         bool $creating,
         string $csrfToken,
@@ -57,7 +58,12 @@ final class AdminPage
             $cards = '<p class="empty">' . $t('admin.empty') . '</p>';
         }
         $noticeHtml = $notice === null ? '' : '<p class="notice" role="status">' . $t($notice) . '</p>';
-        $newPath = '/pulse/manage/r/' . rawurlencode($publicSlug) . '/events?new=1&amp;lang=' . rawurlencode($locale);
+        $sortDirection = $sortDirection === 'asc' ? 'asc' : 'desc';
+        $sortTarget = $sortDirection === 'asc' ? 'desc' : 'asc';
+        $sortLabel = $sortDirection === 'asc' ? $t('admin.sort_descending') : $t('admin.sort_ascending');
+        $listPath = '/pulse/manage/r/' . rawurlencode($publicSlug) . '/events';
+        $sortPath = $listPath . '?lang=' . rawurlencode($locale) . '&amp;sort=' . $sortTarget;
+        $newPath = $listPath . '?new=1&amp;lang=' . rawurlencode($locale) . '&amp;sort=' . $sortDirection;
         $rotationPath = '/pulse/manage/r/' . rawurlencode($publicSlug) . '/participant-link/rotate';
         $credentials = <<<HTML
             <section class="credential-admin" aria-labelledby="credential-heading">
@@ -83,7 +89,7 @@ final class AdminPage
                 <meta name="robots" content="noindex,nofollow,noarchive">
                 <title>{$t('admin.heading')} · pulse</title>
                 <link rel="icon" href="/assets/sats4you-favicon.svg" type="image/svg+xml">
-                <link rel="stylesheet" href="/assets/pulse.css?v=20260817-controls3">
+                <link rel="stylesheet" href="/assets/pulse.css?v=20260817-sort1">
             </head>
             <body>
                 <main class="shell admin-shell">
@@ -101,7 +107,10 @@ final class AdminPage
                     <p class="eyebrow">{$t('admin.eyebrow')}</p>
                     <div class="admin-title">
                         <div><h1>{$t('admin.heading')}</h1><p class="lead">{$e($groupName)}</p></div>
-                        <a class="new-event" href="{$newPath}">{$t('admin.new_event')}</a>
+                        <div class="admin-title-actions">
+                            <a class="sort-events" href="{$sortPath}">{$sortLabel}</a>
+                            <a class="new-event" href="{$newPath}">{$t('admin.new_event')}</a>
+                        </div>
                     </div>
                     {$noticeHtml}
                     {$form}

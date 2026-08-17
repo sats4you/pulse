@@ -203,6 +203,8 @@ final class PulseApplicationFactoryTest extends TestCase
                 ->withCookieParams(['pulse_admin' => $adminCookie]),
         );
         self::assertStringContainsString('data-confirm="Neue Zusagen wirklich schliessen?', (string) $adminList->getBody());
+        self::assertStringContainsString('sort=asc', (string) $adminList->getBody());
+        self::assertStringContainsString('Nächste zuerst ↑', (string) $adminList->getBody());
 
         $close = $app->handle(
             $requests->createServerRequest(
@@ -291,6 +293,25 @@ final class PulseApplicationFactoryTest extends TestCase
         );
         self::assertStringContainsString('Veröffentlichung geplant', (string) $scheduledList->getBody());
         self::assertStringContainsString('Geplante Veröffentlichung', (string) $scheduledList->getBody());
+        $descendingHtml = (string) $scheduledList->getBody();
+        self::assertLessThan(
+            strpos($descendingHtml, 'September-Treffen'),
+            strpos($descendingHtml, 'Geplante Veröffentlichung'),
+        );
+
+        $ascendingList = $app->handle(
+            $requests->createServerRequest('GET', '/pulse/manage/r/' . self::SLUG . '/events?lang=de&sort=asc')
+                ->withQueryParams(['lang' => 'de', 'sort' => 'asc'])
+                ->withCookieParams(['pulse_admin' => $adminCookie]),
+        );
+        self::assertSame(200, $ascendingList->getStatusCode());
+        $ascendingHtml = (string) $ascendingList->getBody();
+        self::assertStringContainsString('sort=desc', $ascendingHtml);
+        self::assertStringContainsString('Späteste zuerst ↓', $ascendingHtml);
+        self::assertLessThan(
+            strpos($ascendingHtml, 'Geplante Veröffentlichung'),
+            strpos($ascendingHtml, 'September-Treffen'),
+        );
 
         $scheduledPublish = $app->handle(
             $requests->createServerRequest(

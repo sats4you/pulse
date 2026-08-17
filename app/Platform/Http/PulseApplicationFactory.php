@@ -421,6 +421,16 @@ final readonly class PulseApplicationFactory
         }
         $locale = $this->locale($request);
         $translator = TranslatorFactory::create($locale, $this->translationDirectory);
+        $sortDirection = ($query['sort'] ?? null) === 'asc' ? 'asc' : 'desc';
+        $events = $this->adminEvents->events($grant);
+        usort($events, static function ($left, $right) use ($sortDirection): int {
+            $comparison = $left->details->timing->startsAt <=> $right->details->timing->startsAt;
+            if ($comparison === 0) {
+                $comparison = $left->createdAt <=> $right->createdAt;
+            }
+
+            return $sortDirection === 'asc' ? $comparison : -$comparison;
+        });
         $notice = match ((string) ($query['notice'] ?? '')) {
             'saved' => 'admin.saved',
             'invalid' => 'admin.invalid',
@@ -434,7 +444,8 @@ final readonly class PulseApplicationFactory
             $locale,
             $this->groupName,
             $slug,
-            $this->adminEvents->events($grant),
+            $events,
+            $sortDirection,
             $editing,
             isset($query['new']),
             $this->csrfToken->issue($adminCookie, $slug),

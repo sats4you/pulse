@@ -68,6 +68,8 @@
   "privacy.version": "Versiun 1.1 · 17 d’avust 2026",
   "admin.heading": "Administrar ils termins",
   "admin.new_event": "+ Termin",
+  "admin.sort_ascending": "Ils proxims l’emprim ↑",
+  "admin.sort_descending": "Ils pli tard l’emprim ↓",
   "admin.edit": "Modifitgar",
   "admin.publish": "Publitgar",
   "admin.schedule": "Planisar la publicaziun",

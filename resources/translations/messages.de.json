@@ -68,6 +68,8 @@
   "privacy.version": "Version 1.1 · 17. August 2026",
   "admin.heading": "Termine verwalten",
   "admin.new_event": "+ Termin",
+  "admin.sort_ascending": "Nächste zuerst ↑",
+  "admin.sort_descending": "Späteste zuerst ↓",
   "admin.edit": "Bearbeiten",
   "admin.publish": "Veröffentlichen",
   "admin.schedule": "Veröffentlichung planen",

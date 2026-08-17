@@ -68,6 +68,8 @@
   "privacy.version": "Versione 1.1 · 17 agosto 2026",
   "admin.heading": "Gestisci gli eventi",
   "admin.new_event": "+ Evento",
+  "admin.sort_ascending": "Prossimi per primi ↑",
+  "admin.sort_descending": "Più lontani per primi ↓",
   "admin.edit": "Modifica",
   "admin.publish": "Pubblica",
   "admin.schedule": "Pianifica la pubblicazione",
