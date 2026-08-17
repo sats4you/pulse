@@ -21,7 +21,7 @@ This repository contains the release candidate for the first closed pilot. The a
 - not yet open for other groups;
 - no real access links, secrets or participant data belong in this repository;
 - the closed pilot is designed for lima-city's published 90-day backup and infrastructure-log limits;
-- the final production-domain, hosting-contract, log and clean-data checks remain before invitations are distributed.
+- the final production-domain, log and clean-data checks remain before invitations are distributed; the data-processing agreement with lima-city is complete.
 
 The public source must match the version operated on sats4you.ch. Real access links, secrets, production configuration and participant data are never part of the repository.
 

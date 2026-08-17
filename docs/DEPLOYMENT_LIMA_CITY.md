@@ -1,6 +1,6 @@
 # Deployment auf lima-city
 
-Status: Vorbereitete Pilotinstallation, 16. August 2026. Die echten Zugänge werden erst nach erfolgreichem Vorab-Check erzeugt.
+Status: Getestete Pilotinstallation, 17. August 2026. Gruppenzugänge, öffentlicher Quellcode, Datenschutzerklärung und Auftragsverarbeitungsvertrag sind vorbereitet; Produktionsumschaltung und abschliessender Echt-Domain-Test stehen noch aus.
 
 ## Zielstruktur
 
@@ -88,7 +88,5 @@ Nach der Einrichtung:
 
 ## Noch ausstehende Freigabepunkte
 
-- Verantwortlicher und Kontaktangaben in der final sichtbaren Datenschutzerklärung bestätigen;
-- Auftragsverarbeitungsvertrag mit lima-city im Kundenkonto prüfen beziehungsweise abschliessen;
-- Repository samt Selbsthosting-Anleitung öffentlich schalten, bevor pulse öffentlich als Open Source bezeichnet wird;
+- Testtermine und Testzusagen vor der Produktionsumschaltung bereinigen und den Teilnehmerlink ersetzen;
 - finalen Browser- und Logtest auf der echten Domain dokumentieren.

@@ -56,7 +56,7 @@ Do not operate the closed pilot with real group data until all of the following 
 - the deletion command runs reliably and failures are noticed without logging sensitive data;
 - the legal controller and contact details have been added to the final privacy notice.
 
-The 90-day lima-city retention is an accepted and documented pilot boundary. The pending support request may improve these periods but is not a deployment blocker.
+The 90-day lima-city retention is an accepted and documented pilot boundary. On 17 August 2026, lima-city support confirmed that Shared Webhosting backups cannot be disabled or shortened and are no longer recoverable from day 91. Access logs and their retention cannot be disabled or shortened either. Webhosting and MySQL operate in Frankfurt within the EU/EEA. lima-city does not retain the output of Shell cronjobs. The data-processing agreement for the hosting account has been completed.
 
 ## Restore procedure
 
