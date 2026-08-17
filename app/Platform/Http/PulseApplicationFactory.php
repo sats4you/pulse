@@ -68,6 +68,8 @@ final readonly class PulseApplicationFactory
         $app->addErrorMiddleware(false, false, false);
         $app->add(new SecurityHeadersMiddleware());
 
+        $app->get('/', static fn (ServerRequestInterface $request, ResponseInterface $response): ResponseInterface =>
+            $response->withHeader('Location', '/pulse')->withStatus(302));
         $app->get('/pulse', $this->landing(...));
         $app->get('/pulse/', $this->landing(...));
         $app->group('/pulse', function (RouteCollectorProxyInterface $routes): void {

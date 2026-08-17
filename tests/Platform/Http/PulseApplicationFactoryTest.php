@@ -483,6 +483,10 @@ final class PulseApplicationFactoryTest extends TestCase
         [$app] = $this->application();
         $requests = new ServerRequestFactory();
 
+        $root = $app->handle($requests->createServerRequest('GET', '/'));
+        self::assertSame(302, $root->getStatusCode());
+        self::assertSame('/pulse', $root->getHeaderLine('Location'));
+
         $landing = $app->handle(
             $requests->createServerRequest('GET', '/pulse?lang=rm')->withQueryParams(['lang' => 'rm']),
         );
