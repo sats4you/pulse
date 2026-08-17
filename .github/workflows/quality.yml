@@ -27,7 +27,19 @@ jobs:
         run: composer validate --strict
 
       - name: Install locked dependencies
-        run: composer install --no-interaction --prefer-dist
+        env:
+          COMPOSER_AUTH: '{"github-oauth":{"github.com":"${{ secrets.GITHUB_TOKEN }}"}}'
+          COMPOSER_MAX_PARALLEL_HTTP: '4'
+        run: |
+          for attempt in 1 2 3; do
+            if composer install --no-interaction --prefer-dist; then
+              exit 0
+            fi
+            if [ "$attempt" -lt 3 ]; then
+              sleep $((attempt * 10))
+            fi
+          done
+          exit 1
 
       - name: Audit production dependencies
         run: composer audit --locked --no-dev
