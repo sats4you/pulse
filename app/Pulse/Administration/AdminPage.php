@@ -8,6 +8,7 @@ use DateTimeImmutable;
 use DateTimeZone;
 use IntlDateFormatter;
 use Sats4you\Pulse\Pulse\Event\PublicationState;
+use Sats4you\Pulse\Pulse\Shared\ProjectLinks;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 final class AdminPage
@@ -71,6 +72,7 @@ final class AdminPage
                 </form>
             </section>
             HTML;
+        $projectLinks = ProjectLinks::render($translator, $locale);
 
         return <<<HTML
             <!doctype html>
@@ -107,6 +109,7 @@ final class AdminPage
                     {$credentials}
                     <aside class="privacy-admin">{$t('admin.privacy_notice')} <a href="/pulse/privacy?lang={$e($locale)}">{$t('privacy.link')}</a></aside>
                     <p class="footnote">{$t('pilot.label')} · {$t('admin.secret_notice')}</p>
+                    {$projectLinks}
                 </main>
                 <script src="/assets/participant-page.js?v=20260816-controls1" defer></script>
             </body>

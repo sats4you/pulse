@@ -30,7 +30,9 @@ final class PrivacyPageTest extends TestCase
         );
 
         self::assertStringContainsString($heading, $html);
+        self::assertStringContainsString('Andreas Kuoni', $html);
         self::assertStringContainsString('security@sats4you.ch', $html);
+        self::assertStringContainsString('https://github.com/sats4you/pulse', $html);
         self::assertStringContainsString('Rumantsch Grischun', $html);
         self::assertStringContainsString('lima-city', $html);
         self::assertStringContainsString('90', $html);

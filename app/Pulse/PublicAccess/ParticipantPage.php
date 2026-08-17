@@ -8,6 +8,7 @@ use DateTimeImmutable;
 use IntlDateFormatter;
 use Sats4you\Pulse\Pulse\Event\EventAccessPolicy;
 use Sats4you\Pulse\Pulse\Event\PublicationState;
+use Sats4you\Pulse\Pulse\Shared\ProjectLinks;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 final readonly class ParticipantPage
@@ -54,6 +55,7 @@ final readonly class ParticipantPage
         if ($cards === '') {
             $cards = '<p class="empty">' . $t('participant.empty') . '</p>';
         }
+        $projectLinks = ProjectLinks::render($translator, $locale);
 
         return <<<HTML
             <!doctype html>
@@ -87,6 +89,7 @@ final readonly class ParticipantPage
                     <h2 class="section-title">{$t('participant.events')}</h2>
                     <div class="event-list">{$cards}</div>
                     <p class="footnote">{$t('pilot.label')} · {$t('participant.no_account')}</p>
+                    {$projectLinks}
                 </main>
                 <script src="/assets/participant-page.js" defer></script>
             </body>

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Sats4you\Pulse\Pulse\PublicAccess;
 
+use Sats4you\Pulse\Pulse\Shared\ProjectLinks;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 final class PulseLandingPage
@@ -22,6 +23,7 @@ final class PulseLandingPage
                 $e($name),
             );
         }
+        $projectLinks = ProjectLinks::render($translator, $locale);
 
         return <<<HTML
             <!doctype html>
@@ -56,6 +58,7 @@ final class PulseLandingPage
                     </section>
                     <p><a class="privacy-link" href="/pulse/privacy?lang={$e($locale)}">{$t('privacy.link')}</a></p>
                     <p class="footnote">{$t('landing.pilot_scope')}</p>
+                    {$projectLinks}
                 </main>
                 <script src="/assets/participant-page.js" defer></script>
             </body>

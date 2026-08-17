@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Sats4you\Pulse\Pulse\Privacy;
 
+use Sats4you\Pulse\Pulse\Shared\ProjectLinks;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 final class PrivacyPage
@@ -29,6 +30,7 @@ final class PrivacyPage
                 $e($name),
             );
         }
+        $projectLinks = ProjectLinks::render($translator, $locale);
 
         return <<<HTML
             <!doctype html>
@@ -59,6 +61,11 @@ final class PrivacyPage
                     <p class="lead">{$t('privacy.intro')}</p>
                     <p class="document-state">{$t('privacy.document_state')}</p>
 
+                    <section>
+                        <h2>{$t('privacy.controller_heading')}</h2>
+                        <p>{$t('privacy.controller_text')}</p>
+                        <p><strong>Andreas Kuoni</strong><br><a href="mailto:security@sats4you.ch">security@sats4you.ch</a></p>
+                    </section>
                     <section>
                         <h2>{$t('privacy.promise_heading')}</h2>
                         <p>{$t('privacy.promise')}</p>
@@ -92,6 +99,7 @@ final class PrivacyPage
                         <p><a href="mailto:security@sats4you.ch">security@sats4you.ch</a></p>
                     </section>
                     <p class="footnote">{$t('privacy.version')}</p>
+                    {$projectLinks}
                 </main>
                 <script src="/assets/participant-page.js" defer></script>
             </body>

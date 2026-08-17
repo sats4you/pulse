@@ -2,13 +2,13 @@
 
 **Privacy-friendly group coordination without accounts or participant lists.**
 
-`pulse` is a planned module of [sats4you.ch](https://sats4you.ch/). It helps a group answer a simple question: **Who is joining the next event?** Participants use a shared access link, RSVP without an account and see only the aggregated number of active commitments.
+`pulse` is a module of [sats4you.ch](https://sats4you.ch/). It helps a group answer a simple question: **Who is joining the next event?** Participants use a shared access link, RSVP without an account and see only the aggregated number of active commitments.
 
 The first closed pilot is intended for **Bern Monthly Bitcoin Meetup**.
 
 ## Current status
 
-This private repository now contains a tested vertical implementation slice. It is **not yet a production-ready application**.
+This repository contains the release candidate for the first closed pilot. The application is installed on a private test hostname; the production domain is only switched after the documented release checks.
 
 - closed pilot implementation started on 15 August 2026;
 - participant access, upcoming-event view, anonymous RSVP and withdrawal are implemented;
@@ -17,12 +17,13 @@ This private repository now contains a tested vertical implementation slice. It 
 - the four-language technical privacy explanation and the primary-data retention job are implemented;
 - automated checks currently cover the core HTTP, authorisation, event, RSVP, CSRF, translation and retention rules;
 - not independently audited;
-- not yet deployed;
+- deployed and tested on a non-production hostname;
 - not yet open for other groups;
 - no real access links, secrets or participant data belong in this repository;
-- the closed pilot is designed for lima-city's published 90-day backup and infrastructure-log limits; final operational checks and controller details remain before deployment.
+- the closed pilot is designed for lima-city's published 90-day backup and infrastructure-log limits;
+- the final production-domain, hosting-contract, log and clean-data checks remain before invitations are distributed.
 
-The repository will only be made public after the implementation, privacy information, self-hosting guide and release checks match the version actually operated on sats4you.ch.
+The public source must match the version operated on sats4you.ch. Real access links, secrets, production configuration and participant data are never part of the repository.
 
 ## Product principles
 
@@ -64,6 +65,7 @@ Repository policies:
 - [GNU AGPL version 3](LICENSE)
 - [Architecture](docs/ARCHITECTURE.md)
 - [Operations](docs/OPERATIONS.md)
+- [Self-hosting](docs/SELF_HOSTING.md)
 
 ## Licence
 
