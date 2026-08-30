@@ -21,6 +21,8 @@ The web server must use HTTPS in production. The application then marks access a
 
 `NOTIFICATION_RECIPIENT`, `NOTIFICATION_FROM` and `NOTIFICATION_LOCALE` configure the operator notification. They must only exist in the non-public runtime configuration. The sender mailbox must be authorised for the hosting mail function; the recipient may be hosted by another provider. The visible privacy explanation must name the actual mail-provider data flow.
 
+`APP_MAINTENANCE=1` activates a database-independent public `503` response. It is mandatory before a restore and may also be used for exceptional maintenance. Normal operation and the final deployment check require the explicit value `0`.
+
 ## Einmalige Einrichtung der Pilotgruppe
 
 Nach der Migration wird die Runde genau einmal über die Kommandozeile angelegt:
@@ -46,6 +48,8 @@ On lima-city this is configured as a Shell-Cronjob with a dedicated `flock` lock
 The command is idempotent. It outputs only success state and aggregate deletion counts. It must not be extended to output event identifiers, access links, RSVP secrets or other sensitive values.
 
 The job deletes due active RSVP records and due events from the primary database. Foreign-key cascading removes any remaining RSVP records belonging to a deleted event.
+
+The same run closes due **Erste Sats** handovers, deletes due BOLT11 invoices, schedules invitation deletion and deletes due invitations. Only after all retention operations succeed does it store the aggregate heartbeat `retention` with its success time. The deployment check rejects a missing heartbeat or one older than 26 hours. Monitoring should therefore alert on a non-zero cron exit code and on a failed deployment check, without forwarding raw application or database details by e-mail.
 
 ## Bundled administrator notification
 
@@ -73,3 +77,14 @@ The 90-day lima-city retention is an accepted and documented pilot boundary. On 
 ## Restore procedure
 
 Never restore a database backup while the public application is available. Put pulse into maintenance mode, restore the selected backup, then rotate the participant, administration and recovery credentials before reopening access. This prevents participant or administration links revoked after the backup date from remaining valid again. Document the restore, credential rotation and reopening without recording any raw secret.
+
+This existing rotation procedure is sufficient only for the separately managed `pulse` pilot group. A restored **Erste Sats** database can reactivate many independently issued secrets that the operator cannot safely replace or redistribute. The MVP therefore uses a deliberately simpler disaster policy: all restored invitation-linked Erste-Sats records are purged before reopening, while irreversible anonymous aggregate counters remain. Active journeys are lost after such a disaster restore.
+
+With `APP_MAINTENANCE=1`, run:
+
+```text
+php bin/first-sats-post-restore-purge.php --confirm-delete-restored-first-sats-invitations
+php bin/pulse-retention.php
+```
+
+The purge command refuses to run without both maintenance mode and the explicit confirmation argument. It outputs only an aggregate deletion count. Rotate all `pulse` pilot credentials afterwards. Set maintenance mode to `0` only when purge, retention and credential rotation have succeeded, then immediately run `php bin/deployment-check.php`. Re-enable maintenance at once if the final check does not return `OK`.

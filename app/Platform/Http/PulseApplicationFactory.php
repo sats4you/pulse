@@ -11,6 +11,7 @@ use DomainException;
 use InvalidArgumentException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Sats4you\Pulse\FirstSats\Http\FirstSatsRoutes;
 use Sats4you\Pulse\Platform\I18n\TranslatorFactory;
 use Sats4you\Pulse\Pulse\Administration\AdminBootstrapPage;
 use Sats4you\Pulse\Pulse\Administration\AdminEventService;
@@ -57,6 +58,7 @@ final readonly class PulseApplicationFactory
         private string $groupName,
         private string $baseUrl,
         private bool $secureCookies,
+        private ?FirstSatsRoutes $firstSatsRoutes = null,
     ) {
     }
 
@@ -67,6 +69,8 @@ final readonly class PulseApplicationFactory
         $app->addRoutingMiddleware();
         $app->addErrorMiddleware(false, false, false);
         $app->add(new SecurityHeadersMiddleware());
+
+        $this->firstSatsRoutes?->register($app);
 
         $app->get('/', static fn (ServerRequestInterface $request, ResponseInterface $response): ResponseInterface =>
             $response->withHeader('Location', '/pulse')->withStatus(302));

@@ -42,4 +42,16 @@ final class RuntimeConfiguration
 
         return $fileValue;
     }
+
+    public function optional(string $name): ?string
+    {
+        $environmentValue = getenv($name);
+        if (is_string($environmentValue) && $environmentValue !== '') {
+            return $environmentValue;
+        }
+
+        $fileValue = $this->fileValues[$name] ?? null;
+
+        return is_string($fileValue) && $fileValue !== '' ? $fileValue : null;
+    }
 }

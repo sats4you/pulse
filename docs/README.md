@@ -12,3 +12,8 @@ Before this repository is made public, this directory must contain reviewed, imp
 - operational release and deletion checks.
 
 Preparation documents are not copied here automatically because they may contain open decisions or refer to unrelated sats4you.ch modules. Every published document must be checked against the actual pulse implementation and hosting configuration first.
+
+Current implementation-matched working documents:
+
+- [`ERSTE_SATS_DATENSCHUTZ.md`](ERSTE_SATS_DATENSCHUTZ.md): data inventory, data flows, retention, recipients, consent versions and outstanding legal release confirmations for **Erste Sats**.
+- [`ERSTE_SATS_GO_LIVE_CHECKLIST.md`](ERSTE_SATS_GO_LIVE_CHECKLIST.md): passed local checks, production steps, smoke tests, rollback procedure and remaining release blockers.

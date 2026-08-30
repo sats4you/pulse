@@ -1,0 +1,5 @@
+<?php
+declare(strict_types=1);
+namespace Sats4you\Pulse\Tests\FirstSats\Payment;
+use DateTimeImmutable;use Sats4you\Pulse\FirstSats\Payment\HandoverState;use Sats4you\Pulse\FirstSats\Payment\HandoverStore;
+final class InMemoryHandoverStore implements HandoverStore{public array $states=[];public function find(string $id):?HandoverState{return $this->states[$id]??null;}public function markSent(string $id,DateTimeImmutable $at):HandoverState{$c=$this->find($id)??new HandoverState($id);return $this->states[$id]=new HandoverState($id,$at,$c->receivedAt,$c->notReceivedAt,$c->closedWithoutConfirmationAt);}public function markNotReceived(string $id,DateTimeImmutable $at):HandoverState{$c=$this->find($id)??new HandoverState($id);return $this->states[$id]=new HandoverState($id,$c->sentAt,$c->receivedAt,$at,$c->closedWithoutConfirmationAt);}public function confirmReceived(string $id,DateTimeImmutable $at):HandoverState{$c=$this->find($id)??new HandoverState($id);return $this->states[$id]=new HandoverState($id,$c->sentAt,$at,$c->notReceivedAt,$c->closedWithoutConfirmationAt);}}
