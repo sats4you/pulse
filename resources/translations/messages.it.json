@@ -159,5 +159,15 @@
   "notification.changes": "Dall’ultimo messaggio: %joins% adesioni, %withdrawals% ritiri",
   "notification.current_count": "Situazione attuale: %count% adesioni",
   "notification.privacy": "Questo messaggio generato automaticamente non contiene dati dei partecipanti né link di accesso segreti.",
-  "access.incomplete": "Questo link di accesso è incompleto. Apri nuovamente il link completo."
+  "access.incomplete": "Questo link di accesso è incompleto. Apri nuovamente il link completo.",
+  "platform.eyebrow": "Bitcoin reso accessibile",
+  "platform.heading": "Cosa desideri scoprire?",
+  "platform.intro": "Due offerte indipendenti sotto lo stesso tetto: conoscere Bitcoin o coordinare appuntamenti con pochi dati.",
+  "platform.products_label": "Offerte di sats4you.ch",
+  "platform.first_sats_title": "Erste Sats (Primi sats)",
+  "platform.first_sats_text": "Comprendere Bitcoin in quattro brevi tappe, conoscere un wallet e, se lo desideri, ricevere i primi sats.",
+  "platform.first_sats_action": "Apri Erste Sats",
+  "platform.pulse_text": "Coordinare appuntamenti senza elenchi pubblici dei partecipanti e senza account utente.",
+  "platform.pulse_action": "Apri pulse",
+  "platform.footer": "sats4you.ch spiega in modo trasparente e punta su protezione dei dati, responsabilità personale e libera scelta."
 }

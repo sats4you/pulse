@@ -50,8 +50,9 @@ final readonly class PdoRetentionStore implements RetentionStore
         foreach($received as $row){$scheduled+=$this->schedule((string)$row['id'],(new DateTimeImmutable((string)$row['received_at']))->add(new DateInterval('P30D')));}
         $zero=$this->db->query("SELECT id,stage_four_completed_at FROM first_sats_invitations WHERE status='accepted' AND sats_amount=0 AND stage_four_completed_at IS NOT NULL AND delete_at IS NULL")->fetchAll(PDO::FETCH_ASSOC);
         foreach($zero as $row){$scheduled+=$this->schedule((string)$row['id'],(new DateTimeImmutable((string)$row['stage_four_completed_at']))->add(new DateInterval('P30D')));}
-        $expired=$this->db->prepare("SELECT id,status,accept_until,complete_until FROM first_sats_invitations WHERE delete_at IS NULL AND ((status='open' AND accept_until<:now) OR (status='accepted' AND stage_four_completed_at IS NULL AND complete_until<:now))");
-        $expired->execute(['now'=>$this->date($now)]);
+        $expired=$this->db->prepare("SELECT id,status,accept_until,complete_until FROM first_sats_invitations WHERE delete_at IS NULL AND ((status='open' AND accept_until<:open_now) OR (status='accepted' AND stage_four_completed_at IS NULL AND complete_until<:accepted_now))");
+        $formattedNow=$this->date($now);
+        $expired->execute(['open_now'=>$formattedNow,'accepted_now'=>$formattedNow]);
         foreach($expired->fetchAll(PDO::FETCH_ASSOC) as $row){$base=$row['status']==='open'?$row['accept_until']:$row['complete_until'];$scheduled+=$this->schedule((string)$row['id'],(new DateTimeImmutable((string)$base))->add(new DateInterval('P30D')));}
         return $scheduled;
     }

@@ -1,13 +1,13 @@
 # Deployment auf lima-city
 
-Status: Getestete Pilotinstallation, 17. August 2026. Gruppenzugänge, öffentlicher Quellcode, Datenschutzerklärung und Auftragsverarbeitungsvertrag sind vorbereitet; Produktionsumschaltung und abschliessender Echt-Domain-Test stehen noch aus.
+Status: Öffentliche Beta seit 6. September 2026 auf `https://sats4you.ch`. Die kombinierte Installation für **Erste Sats** und **Pulse** wurde auf der echten Domain technisch geprüft.
 
 ## Zielstruktur
 
-lima-city erlaubt, eine Website einem frei gewählten Ordner auf dem Webspace zuzuordnen. Für pulse wird die vollständige Anwendung in einen eigenen Ordner hochgeladen und nur dessen Unterordner `public` als Website-Pfad verwendet:
+lima-city erlaubt, eine Website einem frei gewählten Ordner auf dem Webspace zuzuordnen. Die vollständige modulare Anwendung für sats4you.ch wird in einen eigenen Ordner hochgeladen und nur deren Unterordner `public` als Website-Pfad verwendet:
 
 ```text
-/home/webpages/lima-city/<benutzername>/pulse/
+/home/webpages/lima-city/<benutzername>/sats4you-rc1/
 ├── app/
 ├── bin/
 ├── config/
@@ -18,13 +18,13 @@ lima-city erlaubt, eine Website einem frei gewählten Ordner auf dem Webspace zu
 └── vendor/
 ```
 
-In der lima-city-Verwaltung wird `sats4you.ch` unter **Websites & Domains → Inhalt ändern** dem Pfad `pulse/public` zugeordnet. Vor der Umschaltung bleibt die bestehende Weiterleitung erreichbar. Die Umschaltung erfolgt erst, wenn Anwendung und Datenbank vollständig vorbereitet sind.
+In der lima-city-Verwaltung ist `sats4you.ch` unter **Websites & Domains → Inhalt ändern** dem Pfad `sats4you-rc1/public` zugeordnet. Die neutrale Plattformseite liegt auf `/`, **Erste Sats** auf `/erste-sats` und **Pulse** auf `/pulse`.
 
 ## 1. PHP und Dateien
 
 Für die Website PHP 8.3 oder neuer verwenden. Pulse benötigt `json`, `intl`, `mbstring`, `pdo` und `pdo_mysql`.
 
-Die Anwendung inklusive der mit `composer install --no-dev --classmap-authoritative` installierten Produktionsabhängigkeiten nach `pulse/` hochladen. Nicht hochgeladen werden:
+Die Anwendung inklusive der mit `composer install --no-dev --classmap-authoritative` installierten Produktionsabhängigkeiten nach `sats4you-rc1/` hochladen. Nicht hochgeladen werden:
 
 - `.git/`, `.runtime/`, `tests/`, `.phpunit.cache/` und lokale Daten;
 - `.env`-Dateien;
@@ -32,7 +32,7 @@ Die Anwendung inklusive der mit `composer install --no-dev --classmap-authoritat
 
 ## 2. Datenbank
 
-In der lima-city-Verwaltung eine eigene MySQL-Datenbank und einen ausschliesslich dafür verwendeten Datenbankbenutzer anlegen. Danach alle nummerierten Dateien in `database/migrations/` in aufsteigender Reihenfolge einmal über phpMyAdmin oder die MySQL-Konsole importieren. Bei einer bestehenden Installation wird nur die jeweils neue Migration angewendet.
+In der lima-city-Verwaltung eine MySQL-Datenbank und einen ausschliesslich für sats4you.ch verwendeten Datenbankbenutzer anlegen. **Erste Sats** und **Pulse** dürfen diese Datenbank innerhalb des modularen Monolithen gemeinsam verwenden; ihre Tabellen bleiben über die fachlich getrennten Namensbereiche klar unterscheidbar. Danach alle nummerierten Dateien in `database/migrations/` in aufsteigender Reihenfolge einmal über phpMyAdmin oder die MySQL-Konsole importieren. Bei einer bestehenden Installation wird nur die jeweils neue Migration angewendet.
 
 Der Benutzer benötigt für den laufenden Pilot nur Rechte auf dieser Datenbank. Keine Rechte auf Datenbanken anderer Websites vergeben.
 
@@ -71,7 +71,7 @@ Der Check prüft PHP-Version, Erweiterungen, sichere PHP-Fehlerausgabe, Produkti
 In der lima-city-Verwaltung einen täglichen **Shell-Cronjob** anlegen. `<absoluter-pfad>` wird durch den in der Verwaltung beziehungsweise per SSH sichtbaren pulse-Pfad ersetzt:
 
 ```text
-cd <absoluter-pfad>/pulse && flock -n ~/.pulse-retention.lock php bin/pulse-retention.php
+cd <absoluter-pfad>/sats4you-rc1 && flock -n <absoluter-pfad>/.sats4you-retention.lock php bin/pulse-retention.php
 ```
 
 Der Job ist idempotent und gibt nur aggregierte Löschzahlen aus. Nach einem vollständig erfolgreichen Lauf aktualisiert er in `operational_heartbeats` ausschliesslich den Zeitpunkt für `retention`. Bei einem Fehler beendet er sich mit Fehlercode und einer generischen Meldung ohne Datenbank- oder Einladungsdetails. Für diesen Pilot wird kein öffentlich erreichbarer URL-Cronjob verwendet.
@@ -81,7 +81,7 @@ Der Job ist idempotent und gibt nur aggregierte Löschzahlen aus. Nach einem vol
 Einen zweiten **Shell-Cronjob** alle fünf Minuten anlegen:
 
 ```text
-cd <absoluter-pfad>/pulse && php bin/pulse-notifications.php
+cd <absoluter-pfad>/sats4you-rc1 && php bin/pulse-notifications.php
 ```
 
 Der Dispatcher verwendet selbst eine MySQL-Sperre gegen parallele Läufe. Er wartet pro Termin fünf Minuten seit der letzten Änderung, bündelt An- und Abmeldungen und löscht erfolgreich versendete Warteschlangenzeilen sofort. Nicht zustellbare Zeilen werden erneut versucht und nach spätestens sieben Tagen gelöscht. Die Ausgabe enthält nur aggregierte Zähler.

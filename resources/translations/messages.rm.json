@@ -159,5 +159,15 @@
   "notification.changes": "Dapi l’ultima communicaziun: %joins% annunzias, %withdrawals% retratgas",
   "notification.current_count": "Stadi actual: %count% annunzias",
   "notification.privacy": "Quest messadi generà automaticamain na cuntegna naginas datas da participants e nagins links d’access secrets.",
-  "access.incomplete": "Quest link d’access è incumplet. Avra danovamain il link cumplet."
+  "access.incomplete": "Quest link d’access è incumplet. Avra danovamain il link cumplet.",
+  "platform.eyebrow": "Bitcoin explitgà simpel",
+  "platform.heading": "Tge vuls ti scuvrir?",
+  "platform.intro": "Duas purschidas independentas sut in tetg: emprender d’enconuscher Bitcoin u coordinar termins cun paucas datas.",
+  "platform.products_label": "Purschidas da sats4you.ch",
+  "platform.first_sats_title": "Erste Sats (Emprims sats)",
+  "platform.first_sats_text": "Chapir Bitcoin en quatter curtas etappas, emprender d’enconuscher ina wallet e, sche ti vuls, retschaiver ils emprims sats.",
+  "platform.first_sats_action": "Avrir Erste Sats",
+  "platform.pulse_text": "Coordinar termins senza glistas publicas da participants e senza contos d’utilisader.",
+  "platform.pulse_action": "Avrir pulse",
+  "platform.footer": "sats4you.ch explitgescha transparentamain e metta pais sin la protecziun da datas, l’atgna responsabladad e decisiuns libras."
 }

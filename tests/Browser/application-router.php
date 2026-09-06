@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Sats4you\Pulse\Platform\Http\PulseApplicationFactory;
+use Sats4you\Pulse\Platform\Http\PlatformLandingPage;
 use Sats4you\Pulse\Platform\Http\SameOriginGuard;
 use Sats4you\Pulse\Platform\Http\CsrfToken;
 use Sats4you\Pulse\Platform\Security\SecretDigester;
@@ -124,6 +125,7 @@ $application = new PulseApplicationFactory(
     new CredentialRotationService($store, new SecretGenerator(), $digester),
     new BootstrapPage(),
     new ParticipantPage($policy),
+    new PlatformLandingPage(),
     new PulseLandingPage(),
     new AdminBootstrapPage(),
     new AdminPage(),

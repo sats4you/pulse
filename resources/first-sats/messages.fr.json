@@ -92,6 +92,7 @@
     "access.checking": "Le lien secret est vérifié localement.",
     "access.ready": "L’accès est prêt.",
     "access.incomplete": "Ce lien d’invitation est incomplet. Ouvre à nouveau le lien complet depuis le message d’origine.",
+    "operator.access_incomplete": "Ce lien opérateur est incomplet. Ouvre à nouveau le lien complet que tu as enregistré.",
     "access.denied": "L’accès n’a pas pu être ouvert. Vérifie que tu utilises le lien d’invitation complet et actuel.",
     "access.continue": "Continuer",
     "invitation.eyebrow": "Ton invitation personnelle",

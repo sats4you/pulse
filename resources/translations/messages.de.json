@@ -159,5 +159,15 @@
   "notification.changes": "Seit der letzten Meldung: %joins% Anmeldungen, %withdrawals% Abmeldungen",
   "notification.current_count": "Aktueller Stand: %count% Zusagen",
   "notification.privacy": "Diese automatisch erzeugte Nachricht enthält keine Teilnehmerdaten und keine geheimen Zugangslinks.",
-  "access.incomplete": "Dieser Zugangslink ist unvollständig. Bitte öffne den vollständigen Link erneut."
+  "access.incomplete": "Dieser Zugangslink ist unvollständig. Bitte öffne den vollständigen Link erneut.",
+  "platform.eyebrow": "Bitcoin einfach zugänglich",
+  "platform.heading": "Was möchtest du entdecken?",
+  "platform.intro": "Zwei unabhängige Angebote unter einem Dach: Bitcoin kennenlernen oder Termine datensparsam koordinieren.",
+  "platform.products_label": "Angebote von sats4you.ch",
+  "platform.first_sats_title": "Erste Sats",
+  "platform.first_sats_text": "Bitcoin in vier kurzen Etappen verstehen, eine Wallet kennenlernen und auf Wunsch erste Sats erhalten.",
+  "platform.first_sats_action": "Erste Sats öffnen",
+  "platform.pulse_text": "Gemeinsame Termine ohne öffentliche Teilnehmerlisten und ohne Benutzerkonten koordinieren.",
+  "platform.pulse_action": "pulse öffnen",
+  "platform.footer": "sats4you.ch erklärt transparent und setzt auf Datenschutz, Eigenverantwortung und freie Entscheidungen."
 }

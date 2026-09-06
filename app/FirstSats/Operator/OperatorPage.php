@@ -18,7 +18,7 @@ final class OperatorPage
             'target'=>'/erste-sats/operator/dashboard',
             'locale'=>$locale,
             'ready'=>$t->trans('access.ready'),
-            'incomplete'=>$t->trans('access.incomplete'),
+            'incomplete'=>$t->trans('operator.access_incomplete'),
             'denied'=>$t->trans('access.denied'),
         ],JSON_THROW_ON_ERROR));
         return $this->layout($t,$locale,$languages,$t->trans('operator.access_title'),'<section class="card" id="first-sats-access" data-config="'.$config.'"><h1 id="state-title">'.$this->e($t->trans('operator.access_title')).'</h1><p id="state-copy">'.$this->e($t->trans('operator.access_checking')).'</p><a class="primary button" id="continue" href="#" hidden>'.$this->e($t->trans('access.continue')).'</a></section><script src="/assets/first-sats-access.js" defer></script>');

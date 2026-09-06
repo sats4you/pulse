@@ -14,6 +14,7 @@ final class SecurityHeadersMiddleware
     {
         $path = $request->getUri()->getPath();
         $robots = in_array($request->getMethod(), ['GET', 'HEAD'], true) && in_array($path, [
+            '/',
             '/erste-sats',
             '/erste-sats/',
             '/erste-sats/faq',

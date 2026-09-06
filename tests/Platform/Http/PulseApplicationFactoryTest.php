@@ -10,6 +10,7 @@ use PDO;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
 use Sats4you\Pulse\Platform\Http\PulseApplicationFactory;
+use Sats4you\Pulse\Platform\Http\PlatformLandingPage;
 use Sats4you\Pulse\Platform\Http\SameOriginGuard;
 use Sats4you\Pulse\Platform\Http\CsrfToken;
 use Sats4you\Pulse\Platform\Security\SecretDigester;
@@ -505,8 +506,11 @@ final class PulseApplicationFactoryTest extends TestCase
         $requests = new ServerRequestFactory();
 
         $root = $app->handle($requests->createServerRequest('GET', '/'));
-        self::assertSame(302, $root->getStatusCode());
-        self::assertSame('/pulse', $root->getHeaderLine('Location'));
+        self::assertSame(200, $root->getStatusCode());
+        self::assertStringContainsString('Was möchtest du entdecken?', (string) $root->getBody());
+        self::assertStringContainsString('/erste-sats?lang=de', (string) $root->getBody());
+        self::assertStringContainsString('/pulse?lang=de', (string) $root->getBody());
+        self::assertSame('index, follow', $root->getHeaderLine('X-Robots-Tag'));
 
         $landing = $app->handle(
             $requests->createServerRequest('GET', '/pulse?lang=rm')->withQueryParams(['lang' => 'rm']),
@@ -592,6 +596,7 @@ final class PulseApplicationFactoryTest extends TestCase
             new CredentialRotationService($store, new SecretGenerator(), $digester),
             new BootstrapPage(),
             new ParticipantPage($policy),
+            new PlatformLandingPage(),
             new PulseLandingPage(),
             new AdminBootstrapPage(),
             new AdminPage(),

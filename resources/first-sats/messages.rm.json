@@ -92,6 +92,7 @@
     "access.checking": "Il link secret vegn controllà localmain.",
     "access.ready": "L’access è pront.",
     "access.incomplete": "Quest link d’invitaziun è incumplet. Avra danovamain il link cumplet or dal messadi original.",
+    "operator.access_incomplete": "Quest link d’operatur è incumplet. Avra danovamain il link cumplet che ti has memorisà.",
     "access.denied": "L’access n’ha betg pudì vegnir avert. Controllescha che ti dovras il link d’invitaziun cumplet ed actual.",
     "access.continue": "Vinavant",
     "invitation.eyebrow": "Tia invitaziun persunala",

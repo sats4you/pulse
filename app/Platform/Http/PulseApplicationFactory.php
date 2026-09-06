@@ -35,8 +35,8 @@ final readonly class PulseApplicationFactory
     private const LANGUAGES = [
         'de' => 'Deutsch',
         'fr' => 'Français',
-        'it' => 'Italiano',
-        'rm' => 'Rumantsch Grischun',
+        'it' => 'Italiano · In revisione dalla comunità',
+        'rm' => 'Rumantsch Grischun · En revisiun da la communitad',
     ];
 
     public function __construct(
@@ -46,6 +46,7 @@ final readonly class PulseApplicationFactory
         private CredentialRotationService $credentialRotation,
         private BootstrapPage $bootstrapPage,
         private ParticipantPage $participantPage,
+        private PlatformLandingPage $platformLandingPage,
         private PulseLandingPage $landingPage,
         private AdminBootstrapPage $adminBootstrapPage,
         private AdminPage $adminPage,
@@ -72,8 +73,7 @@ final readonly class PulseApplicationFactory
 
         $this->firstSatsRoutes?->register($app);
 
-        $app->get('/', static fn (ServerRequestInterface $request, ResponseInterface $response): ResponseInterface =>
-            $response->withHeader('Location', '/pulse')->withStatus(302));
+        $app->get('/', $this->platformLanding(...));
         $app->get('/pulse', $this->landing(...));
         $app->get('/pulse/', $this->landing(...));
         $app->group('/pulse', function (RouteCollectorProxyInterface $routes): void {
@@ -96,6 +96,15 @@ final readonly class PulseApplicationFactory
         });
 
         return $app;
+    }
+
+    private function platformLanding(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        $locale = $this->locale($request);
+        $translator = TranslatorFactory::create($locale, $this->translationDirectory);
+        $response->getBody()->write($this->platformLandingPage->render($translator, $locale, self::LANGUAGES));
+
+        return $response->withHeader('Content-Type', 'text/html; charset=utf-8');
     }
 
     private function landing(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface

@@ -92,6 +92,7 @@
     "access.checking": "Il link segreto viene verificato localmente.",
     "access.ready": "L’accesso è pronto.",
     "access.incomplete": "Questo link d’invito è incompleto. Apri di nuovo il link completo dal messaggio originale.",
+    "operator.access_incomplete": "Questo link operatore è incompleto. Apri nuovamente il link completo che hai salvato.",
     "access.denied": "Non è stato possibile aprire l’accesso. Verifica di usare il link d’invito completo e aggiornato.",
     "access.continue": "Continua",
     "invitation.eyebrow": "Il tuo invito personale",

@@ -1,8 +1,14 @@
 DirectoryIndex index.php
 Options -Indexes
 
+<IfModule mod_headers.c>
+    Header always unset X-Powered-By
+</IfModule>
+
 <IfModule mod_rewrite.c>
     RewriteEngine On
+    RewriteCond %{HTTP_HOST} ^www\.sats4you\.ch$ [NC]
+    RewriteRule ^ https://sats4you.ch%{REQUEST_URI} [R=308,L]
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ index.php [QSA,L]
 </IfModule>

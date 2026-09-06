@@ -92,6 +92,7 @@
     "access.checking": "Der geheime Link wird lokal geprüft.",
     "access.ready": "Der Zugang ist bereit.",
     "access.incomplete": "Dieser Einladungslink ist unvollständig. Bitte öffne den vollständigen Link aus der ursprünglichen Nachricht erneut.",
+    "operator.access_incomplete": "Dieser Betreiberlink ist unvollständig. Öffne den vollständig gespeicherten Link erneut.",
     "access.denied": "Der Zugang konnte nicht geöffnet werden. Bitte prüfe, ob du den vollständigen und aktuellen Einladungslink verwendest.",
     "access.continue": "Weiter",
     "invitation.eyebrow": "Deine persönliche Einladung",

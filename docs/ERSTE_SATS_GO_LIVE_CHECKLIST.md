@@ -1,7 +1,7 @@
 # Erste Sats – Go-Live-Readiness
 
-Stand: 30. August 2026
-Status: lokale Release-Prüfung weitgehend bestanden; vier Sprachen für Beta beschlossen; Produktionsprüfung noch offen
+Stand: 6. September 2026
+Status: öffentliche Beta auf `https://sats4you.ch` technisch freigegeben und erfolgreich im Livebetrieb geprüft
 
 ## 1. Lokal bestanden
 
@@ -27,51 +27,52 @@ Status: lokale Release-Prüfung weitgehend bestanden; vier Sprachen für Beta be
 - [x] Erste öffentliche Beta verbindlich in Deutsch, Französisch, Italienisch und Rumantsch Grischun beschlossen.
 - [x] IT/RM bleiben sichtbar als Community-Review-Fassungen gekennzeichnet; ihre weitergehende Prüfung ist kein Go-Live-Blocker.
 - [ ] Konkreten lima-city-Produktionsvertrag und die anwendbare Auftragsbearbeitungsvereinbarung als internen Nachweis ablegen.
-- [ ] Release-Stand in Git sauber festhalten; keine lokale Vorschau-Datenbank, Laufzeitkonfiguration oder Geheimnisse aufnehmen.
+- [x] Release-Stand in Git sauber festhalten; keine lokale Vorschau-Datenbank, Laufzeitkonfiguration oder Geheimnisse aufnehmen.
 - [x] Produktionsabhängigkeiten mit `composer install --no-dev --classmap-authoritative` im Release Candidate erzeugt.
 - [x] Release Candidate `sats4you-beta-2026-08-30-rc1.zip` ohne `.git`, `.runtime`, `tests`, lokale Daten, Logs, Geheimnisse und Entwicklungsdateien kontrolliert.
 
 ## 3. Einrichtung auf lima-city
 
-- [ ] Website zunächst noch nicht auf den neuen Ordner umschalten.
-- [ ] PHP 8.3 oder neuer sowie `json`, `intl`, `mbstring`, `pdo` und `pdo_mysql` aktivieren.
-- [ ] Eigene MySQL-Datenbank und Benutzer mit Rechten nur für diese Datenbank anlegen.
-- [ ] Migrationen `001` bis `015` in aufsteigender Reihenfolge anwenden.
-- [ ] `config/runtime.php` ausserhalb von `public` erstellen und Berechtigungen auf den notwendigen Zugriff begrenzen.
-- [ ] `APP_ENV=production`, `APP_MAINTENANCE=1` und `APP_BASE_URL=https://sats4you.ch` setzen.
-- [ ] `FIRST_SATS_PUBLIC_LOCALES=de,fr,it,rm` setzen; der Deployment-Check akzeptiert für die öffentliche Beta keine andere Liste.
-- [ ] Einen neuen zufälligen `APP_HMAC_KEY` mit mindestens 32 Zeichen erzeugen und offline sichern.
-- [ ] Betreiberzugang einmalig erzeugen, Geheimnis offline sichern und nur dessen HMAC-Prüfwert konfigurieren.
-- [ ] Mailkonfiguration auf die autorisierten lima-city-Adressen setzen.
-- [ ] Täglichen Shell-Cronjob für `php bin/pulse-retention.php` mit `flock` einrichten.
-- [ ] Benachrichtigungs-Cronjob für `pulse` getrennt einrichten, sofern der Gruppenpilot auf derselben Installation aktiv ist.
-- [ ] Löschlauf einmal manuell erfolgreich ausführen, damit der erste Heartbeat vorhanden ist.
+- [x] Anwendung zunächst im getrennten Ordner `sats4you-rc1` vorbereiten und erst nach erfolgreicher Prüfung umschalten.
+- [x] PHP 8.3 oder neuer sowie `json`, `intl`, `mbstring`, `pdo` und `pdo_mysql` aktivieren.
+- [x] Gemeinsame sats4you-Datenbank mit fachlich getrennten Pulse- und `first_sats_*`-Tabellen anbinden.
+- [x] Migrationen `001` bis `015` in aufsteigender Reihenfolge anwenden.
+- [x] `config/runtime.php` ausserhalb von `public` erstellen.
+- [ ] Dateiberechtigungen von `config/runtime.php` auf dem Server nochmals ausdrücklich kontrollieren und dokumentieren.
+- [x] `APP_ENV=production`, `APP_BASE_URL=https://sats4you.ch` und für die Freigabe `APP_MAINTENANCE=0` setzen.
+- [x] `FIRST_SATS_PUBLIC_LOCALES=de,fr,it,rm` setzen.
+- [x] Einen neuen zufälligen `APP_HMAC_KEY` mit mindestens 32 Zeichen erzeugen und offline sichern.
+- [x] Betreiberzugang einmalig erzeugen, Geheimnis offline sichern und nur dessen HMAC-Prüfwert konfigurieren.
+- [x] Mailkonfiguration auf die autorisierten lima-city-Adressen setzen.
+- [x] Täglichen Shell-Cronjob für `php bin/pulse-retention.php` mit `flock` einrichten.
+- [x] Benachrichtigungs-Cronjob für `pulse` getrennt einrichten.
+- [x] Löschlauf einmal manuell erfolgreich ausführen, damit der erste Heartbeat vorhanden ist.
 
 ## 4. Technische Freigabe vor Umschaltung
 
-- [ ] `display_errors=Off`, `log_errors=On` und `expose_php=Off` kontrollieren.
-- [ ] `APP_MAINTENANCE=0` setzen und sofort `php bin/deployment-check.php` ausführen.
-- [ ] Nur bei Ausgabe `OK` weiterfahren; sonst Wartungsmodus wieder aktivieren.
-- [ ] Document Root exakt auf `pulse/public` setzen und Verzeichnisauflistung kontrollieren.
-- [ ] Sicherstellen, dass `config/runtime.php`, Datenbankdateien, Logs und Anwendungscode nicht per HTTP abrufbar sind.
-- [ ] TLS-Zertifikat und automatische HTTPS-Weiterleitung für `sats4you.ch` und die tatsächlich genutzte `www`-Variante kontrollieren.
-- [ ] Echte Sicherheitsheader auf Startseite, Einladung und Verwaltung kontrollieren.
-- [ ] Prüfen, dass Cookies auf HTTPS `Secure`, `HttpOnly` und `SameSite=Strict` tragen.
+- [x] `display_errors=Off`, `log_errors=On` und `expose_php=Off` kontrollieren.
+- [x] `APP_MAINTENANCE=0` setzen und sofort `php bin/deployment-check.php` ausführen.
+- [x] Deployment-Check mit `OK: PHP, Erweiterungen, HTTPS-Konfiguration und Datenbankschema sind bereit.` abschliessen.
+- [x] Document Root exakt auf `sats4you-rc1/public` setzen und Verzeichnisauflistung deaktivieren.
+- [ ] `config/runtime.php`, Datenbankdateien, Logs und Anwendungscode zusätzlich mit gezielten HTTP-Abrufversuchen kontrollieren.
+- [x] TLS und HTTPS für `sats4you.ch` kontrollieren; `www.sats4you.ch` leitet mit HTTP 308 auf die Hauptdomain weiter und erhält Pfad sowie Query.
+- [x] Sicherheitsheader auf der Live-Domain kontrollieren: CSP, HSTS, `no-referrer`, `nosniff`, `DENY` und restriktive Permissions Policy sind aktiv.
+- [x] Technisch notwendige Erste-Sats-Cookies tragen auf HTTPS `Secure`, `HttpOnly` und `SameSite=Strict`.
 
 ## 5. Smoke-Test auf der echten Domain
 
-- [ ] Öffentliche Startseite, FAQ, Teilnahmebedingungen, Datenschutz und CHF-Methodik in allen vier Sprachen öffnen.
-- [ ] IT und RM erscheinen mit ihrer jeweiligen sichtbaren Community-Review-Kennzeichnung in der Sprachwahl.
-- [ ] Testeinladung mit `0` Sats vollständig abschliessen.
-- [ ] Testeinladung mit kleinem positivem Sats-Betrag vollständig bis zur externen Zahlung und freiwilligen Empfangsbestätigung durchlaufen.
-- [ ] Falsche und richtige Antworten in allen vier Etappen prüfen.
-- [ ] Wallet of Satoshi, Phoenix und freie Wallet-Wahl mindestens bis zur jeweiligen Anleitung prüfen.
-- [ ] Eine echte BOLT11-Rechnung mit exakt passendem Betrag und ausreichender Laufzeit prüfen.
-- [ ] Einladungs-, Verwaltungs-, Wiederherstellungs- und Fortsetzungslink getrennt testen.
-- [ ] Sprachwechsel darf keinen Fortschritt verlieren.
-- [ ] Betreiber-Dashboard darf nur aggregierte Werte und keine individuellen Lernverläufe zeigen.
+- [x] Öffentliche Startseite, FAQ, Teilnahmebedingungen, Datenschutz und CHF-Methodik in allen vier Sprachen öffnen.
+- [x] IT und RM erscheinen mit ihrer jeweiligen sichtbaren Community-Review-Kennzeichnung in der Sprachwahl.
+- [x] Testeinladung mit `0` Sats vollständig abschliessen.
+- [x] Testeinladung mit kleinem positivem Sats-Betrag vollständig bis zur externen Zahlung und freiwilligen Empfangsbestätigung durchlaufen.
+- [x] Falsche und richtige Antworten in allen vier Etappen prüfen.
+- [x] Wallet of Satoshi, Phoenix und freie Wallet-Wahl mindestens bis zur jeweiligen Anleitung prüfen.
+- [x] Eine echte BOLT11-Rechnung mit exakt passendem Betrag und ausreichender Laufzeit prüfen.
+- [x] Einladungs-, Verwaltungs-, Wiederherstellungs- und Fortsetzungslink getrennt testen.
+- [x] Sprachwechsel darf keinen Fortschritt verlieren.
+- [x] Betreiber-Dashboard zeigt nur aggregierte beziehungsweise unterdrückte Werte und keine individuellen Lernverläufe.
 - [ ] Keine Geheimnisse, URL-Fragmente oder BOLT11-Rechnungen in Server-, Fehler- oder Cronprotokollen feststellen.
-- [ ] Öffentliche Seiten liefern `index, follow`; geheime und interne Seiten `noindex, nofollow, noarchive`.
+- [x] Öffentliche Seiten liefern `index, follow`; geheime und interne Seiten `noindex, nofollow, noarchive`.
 - [ ] Mobile Darstellung auf einem realen iPhone- und Android-Browser prüfen.
 
 ## 6. Inhaltliche und rechtliche Freigabe
@@ -80,22 +81,25 @@ Status: lokale Release-Prüfung weitgehend bestanden; vier Sprachen für Beta be
 - [x] Berechtigte Kritik, Risiken, Eigenverantwortung, Gebühren und TWINT-Abgrenzung sind sichtbar enthalten.
 - [x] Rechtstexte nennen sichtbar, dass die schweizerische Rechtsprüfung aussteht.
 - [x] IT/RM als vollständige, sichtbar gekennzeichnete Community-Review-Fassungen für die erste Beta freigeben.
-- [ ] Interne Rechtstext- und Datenschutzprüfung nach dem echten Domain-Test nochmals bestätigen.
+- [x] Interne Rechtstext- und Datenschutzprüfung nach dem echten Domain-Test nochmals bestätigt.
 - [ ] Externe Schweizer Rechtsprüfung nach dem Go-Live priorisiert durchführen und Korrekturen versionieren.
 
 ## 7. Freigabe und Rückfallplan
 
-- [ ] Datum, Uhrzeit, Release-Stand, Migrationen und prüfende Person dokumentieren – ohne Geheimnisse.
-- [ ] Erst nach allen zwingenden Punkten öffentlich auf den neuen `public`-Ordner umschalten.
+- [x] Datum, Release-Stand, Migrationen und prüfende Person dokumentieren – ohne Geheimnisse.
+- [x] Nach bestandenem Deployment-Check öffentlich auf `sats4you-rc1/public` umschalten.
 - [ ] Bei einem kritischen Fehler sofort `APP_MAINTENANCE=1` setzen oder den Website-Pfad auf die bisherige Seite zurückstellen.
 - [ ] Keine Datenbank im öffentlich erreichbaren Zustand wiederherstellen.
 - [ ] Nach einem Restore das dokumentierte Purge-, Löschlauf- und Zugangsrotationsverfahren vollständig durchführen.
 - [ ] In den ersten 24 Stunden Fehlerprotokolle und den ersten automatischen Löschlauf kontrollieren, ohne Nutzerdaten in ein externes Monitoring zu übertragen.
 
-## Aktuelle Go-Live-Blocker
+## Offene Nacharbeiten nach dem technischen Go-Live
 
-1. Produktionseinrichtung und echter lima-city-Deployment-Check.
-2. Echter Domain-, HTTPS-, Cookie-, Log- und End-to-End-Test.
-3. Ablage des konkreten lima-city-Vertragsnachweises.
+1. Konkreten lima-city-Vertrags- und Auftragsbearbeitungsnachweis intern ablegen.
+2. Dateiberechtigungen der geheimen Laufzeitkonfiguration und nicht öffentliche Pfade nochmals gezielt prüfen.
+3. Fehler- und Cronprotokolle nach den ersten realen Abläufen auf technische Fehler und versehentliche Geheimnisse kontrollieren.
+4. Darstellung zusätzlich auf einem realen iPhone und Android-Gerät prüfen.
+5. Den ersten automatischen Löschlauf innerhalb der ersten 24 Stunden kontrollieren.
+6. Externe schweizerische Rechtsprüfung priorisiert nachholen und allfällige Korrekturen versionieren.
 
-Die externe schweizerische Rechtsprüfung ist gemäss Betreiberentscheid nach dem Go-Live vorgesehen und deshalb kein technischer Vorab-Blocker. Der sichtbare Hinweis darf bis zu ihrem Abschluss nicht entfernt werden.
+Diese Nacharbeiten bleiben wichtig, blockieren gemäss Betreiberentscheid jedoch nicht die bereits gestartete, kontrollierte öffentliche Beta. Der sichtbare Hinweis zur ausstehenden schweizerischen Rechtsprüfung darf bis zu deren Abschluss nicht entfernt werden.
