@@ -2,25 +2,25 @@
 
 Status: tested vertical pilot slice, 15 August 2026.
 
-Pulse is a server-rendered modular PHP monolith. The closed pilot contains one preconfigured coordination round, multiple events and anonymous event-specific RSVPs. It has no participant accounts, names, attendee list, analytics or calendar integration.
+Pulse is a server-rendered modular PHP monolith. The pilot contains one preconfigured coordination round, multiple events and a shared anonymous RSVP count. It has no participant accounts, names, attendee list, analytics or calendar integration.
 
 ## Module boundaries
 
 - `app/Platform`: neutral infrastructure such as secret handling, database access and translation.
 - `app/Pulse/Event`: publication, visibility and event-time rules.
-- `app/Pulse/Attendance`: idempotent RSVP and withdrawal operations.
+- `app/Pulse/Attendance`: shared anonymous count increase and decrease operations.
 - `app/Pulse/Administration`: event administration.
 - `app/Pulse/Credentials`: one-time round provisioning and atomic participant, administration and recovery credential rotation.
 - `app/Pulse/Privacy`: user-facing data-flow and privacy information.
 - `app/Pulse/Retention`: deletion deadlines and idempotent deletion jobs.
 
-The implemented HTTP slice contains a public pulse entry, fragment-based participant, administration and recovery access, role-scoped signed sessions, the public event list, anonymous event-specific RSVPs, administration forms, atomic recovery-code and participant-link rotation, a public technical privacy explanation and the primary-data deletion command.
+The implemented HTTP slice contains a public pulse entry, fragment-based participant, administration and recovery access, role-scoped signed sessions, the public event list, a shared anonymous RSVP count, administration forms, atomic recovery-code and participant-link rotation, a public technical privacy explanation and the primary-data deletion command.
 
 The learning journey is not part of this repository. Pulse data, secrets, sessions and identifiers must never be reused to recognise people in another sats4you.ch module.
 
 ## Security model
 
-Participant, administration, recovery and event-specific RSVP secrets are separate random values with at least 256 bits of entropy. Raw secrets are exchanged from URL fragments and are never stored in the database. The database contains binary HMAC-SHA-256 digests. The HMAC key remains outside the database and repository.
+Participant, administration and recovery secrets are separate random values with at least 256 bits of entropy. Raw secrets are exchanged from URL fragments and are never stored in the database. The participant link is the shared access boundary; it does not create device-bound RSVP state. Each count entry uses a server-generated opaque database value without a browser or person association.
 
 Authorisation, event visibility, RSVP deadlines, withdrawal deadlines and deletion deadlines are server-side rules. UI visibility is not an authorisation mechanism.
 

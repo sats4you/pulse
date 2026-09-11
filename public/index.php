@@ -91,8 +91,6 @@ $attendanceService = new AttendanceService(
     $attendanceStore,
     $policy,
     new RetentionSchedule(),
-    $secretGenerator,
-    $digester,
 );
 $accessExchange = new AccessExchange(
     new PdoRoundAccessStore($connection),
@@ -101,9 +99,7 @@ $accessExchange = new AccessExchange(
 );
 $participantFlow = new ParticipantFlow(
     new PdoPublishedEventStore($connection),
-    $attendanceStore,
     $attendanceService,
-    $digester,
 );
 
 $app = (new PulseApplicationFactory(

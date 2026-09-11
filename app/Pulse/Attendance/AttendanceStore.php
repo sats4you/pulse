@@ -13,16 +13,13 @@ interface AttendanceStore
 
     public function getEventForUpdate(string $roundId, string $eventId): ?EventSnapshot;
 
-    public function hasCommitment(string $eventId, string $secretDigest): bool;
-
-    public function insertCommitment(
+    public function addCommitment(
         string $eventId,
-        string $secretDigest,
         DateTimeImmutable $createdAt,
         DateTimeImmutable $deleteAt,
     ): void;
 
-    public function deleteCommitment(string $eventId, string $secretDigest): bool;
+    public function removeAnyCommitment(string $eventId): bool;
 
     public function countCommitments(string $eventId): int;
 

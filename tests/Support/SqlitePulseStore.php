@@ -66,31 +66,20 @@ final readonly class SqlitePulseStore implements AttendanceStore, PublishedEvent
         );
     }
 
-    public function hasCommitment(string $eventId, string $secretDigest): bool
-    {
-        $statement = $this->connection->prepare('SELECT 1 FROM attendance WHERE event_id = :event_id AND digest = :digest');
-        $statement->bindValue('event_id', $eventId);
-        $statement->bindValue('digest', $secretDigest, PDO::PARAM_LOB);
-        $statement->execute();
-
-        return $statement->fetchColumn() !== false;
-    }
-
-    public function insertCommitment(string $eventId, string $secretDigest, DateTimeImmutable $createdAt, DateTimeImmutable $deleteAt): void
+    public function addCommitment(string $eventId, DateTimeImmutable $createdAt, DateTimeImmutable $deleteAt): void
     {
         $statement = $this->connection->prepare('INSERT INTO attendance (event_id, digest, created_at, delete_at) VALUES (:event_id, :digest, :created_at, :delete_at)');
         $statement->bindValue('event_id', $eventId);
-        $statement->bindValue('digest', $secretDigest, PDO::PARAM_LOB);
+        $statement->bindValue('digest', random_bytes(32), PDO::PARAM_LOB);
         $statement->bindValue('created_at', self::format($createdAt));
         $statement->bindValue('delete_at', self::format($deleteAt));
         $statement->execute();
     }
 
-    public function deleteCommitment(string $eventId, string $secretDigest): bool
+    public function removeAnyCommitment(string $eventId): bool
     {
-        $statement = $this->connection->prepare('DELETE FROM attendance WHERE event_id = :event_id AND digest = :digest');
+        $statement = $this->connection->prepare('DELETE FROM attendance WHERE rowid = (SELECT rowid FROM attendance WHERE event_id = :event_id ORDER BY created_at ASC, rowid ASC LIMIT 1)');
         $statement->bindValue('event_id', $eventId);
-        $statement->bindValue('digest', $secretDigest, PDO::PARAM_LOB);
         $statement->execute();
 
         return $statement->rowCount() === 1;

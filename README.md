@@ -11,7 +11,7 @@ The first closed pilot is intended for **Bern Monthly Bitcoin Meetup**.
 This repository contains the source operated for the first pilot at [sats4you.ch/pulse](https://sats4you.ch/pulse). The production installation passed the documented release checks on 17 August 2026.
 
 - closed pilot implementation started on 15 August 2026;
-- participant access, upcoming-event view, anonymous RSVP and withdrawal are implemented;
+- participant access, upcoming-event view, shared anonymous count increase and decrease are implemented;
 - secret administration access and event creation, editing, scheduling, publication, cancellation, duplication and RSVP closure are implemented;
 - recovery-code rotation, participant-link rotation and one-time round provisioning are implemented;
 - the four-language technical privacy explanation, primary-data retention job and anonymous bundled administrator notifications are implemented;
@@ -31,7 +31,7 @@ The public source must match the version operated on sats4you.ch. Real access li
 - no names, email addresses, phone numbers or public attendee lists;
 - only the exact aggregated number of active RSVPs is visible to people holding the participant link;
 - separate participant, administration and recovery secrets;
-- event-specific RSVP secrets that do not create a cross-event participant profile;
+- no device- or browser-bound RSVP secret; the participant link is the shared, trust-based access boundary;
 - clear limits instead of absolute anonymity or security promises;
 - minimal data, documented deletion and no advertising analytics;
 - administrator email notifications contain only bundled RSVP changes and the current aggregate count, never participant data or access links;

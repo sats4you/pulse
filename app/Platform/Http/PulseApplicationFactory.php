@@ -324,11 +324,6 @@ final readonly class PulseApplicationFactory
 
         $now = new DateTimeImmutable();
         $events = $this->participantFlow->events($grant, $now);
-        $cookies = $request->getCookieParams();
-        $secrets = [];
-        foreach ($events as $event) {
-            $secrets[$event->publicId] = (string) ($cookies[$this->rsvpCookieName($event->publicId)] ?? '');
-        }
         $locale = $this->locale($request);
         $translator = TranslatorFactory::create($locale, $this->translationDirectory);
         $html = $this->participantPage->render(
@@ -337,7 +332,6 @@ final readonly class PulseApplicationFactory
             $this->groupName,
             $slug,
             $events,
-            $this->participantFlow->joinedByPublicId($events, $secrets),
             self::LANGUAGES,
             $now,
         );
@@ -362,25 +356,15 @@ final readonly class PulseApplicationFactory
             return $response->withStatus(403);
         }
 
-        $cookieName = $this->rsvpCookieName($event);
         try {
-            $result = $this->participantFlow->join(
+            $this->participantFlow->join(
                 $grant,
                 $event,
-                $request->getCookieParams()[$cookieName] ?? null,
                 new DateTimeImmutable(),
             );
         } catch (\DomainException) {
             return $response->withStatus(409);
         }
-
-        $response = $response->withAddedHeader('Set-Cookie', CookieHeader::create(
-            $cookieName,
-            $result->participantSecret,
-            '/pulse/r/' . rawurlencode($slug),
-            $result->expiresAt,
-            $this->secureCookies,
-        ));
 
         return $this->redirectToEvents($request, $response, $slug);
     }
@@ -397,23 +381,15 @@ final readonly class PulseApplicationFactory
         $slug = (string) $args['slug'];
         $event = (string) $args['event'];
         $grant = $this->participantGrant($request, $slug);
-        $cookieName = $this->rsvpCookieName($event);
-        $secret = (string) ($request->getCookieParams()[$cookieName] ?? '');
-        if ($grant === null || $secret === '') {
+        if ($grant === null) {
             return $response->withStatus(403);
         }
 
         try {
-            $this->participantFlow->withdraw($grant, $event, $secret, new DateTimeImmutable());
+            $this->participantFlow->withdraw($grant, $event, new DateTimeImmutable());
         } catch (\DomainException) {
             return $response->withStatus(409);
         }
-
-        $response = $response->withAddedHeader('Set-Cookie', CookieHeader::expire(
-            $cookieName,
-            '/pulse/r/' . rawurlencode($slug),
-            $this->secureCookies,
-        ));
 
         return $this->redirectToEvents($request, $response, $slug);
     }
@@ -747,11 +723,6 @@ final readonly class PulseApplicationFactory
                 '/pulse/manage/r/' . rawurlencode($slug) . '/events?lang=' . rawurlencode($locale) . '&notice=' . rawurlencode($notice),
             )
             ->withStatus(303);
-    }
-
-    private function rsvpCookieName(string $publicEventId): string
-    {
-        return 'pulse_rsvp_' . strtolower(preg_replace('/[^a-f0-9]/i', '', $publicEventId) ?? '');
     }
 
     /** @param array<string, bool> $data */

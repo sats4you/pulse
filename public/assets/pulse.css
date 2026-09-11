@@ -326,6 +326,9 @@ summary { cursor: pointer; font-weight: 700; }
   background-size: 5px 5px;
 }
 .field-help { margin: 7px 0 0; color: #9c9282; font-size: .78rem; }
+.shared-rsvp-hint { margin: 18px 0 0; max-width: 640px; color: var(--muted); line-height: 1.5; }
+.rsvp-actions { display: grid; gap: 10px; margin-top: 16px; }
+.rsvp-actions form { margin: 0; }
 .form-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 18px; }
 .form-actions .secondary,
 .form-actions .primary-button { width: auto; }

@@ -35,24 +35,18 @@ final class InMemoryAttendanceStore implements AttendanceStore
         return $event?->roundId === $roundId ? $event : null;
     }
 
-    public function hasCommitment(string $eventId, string $secretDigest): bool
-    {
-        return isset($this->commitments[$eventId][bin2hex($secretDigest)]);
-    }
-
-    public function insertCommitment(
+    public function addCommitment(
         string $eventId,
-        string $secretDigest,
         DateTimeImmutable $createdAt,
         DateTimeImmutable $deleteAt,
     ): void {
-        $this->commitments[$eventId][bin2hex($secretDigest)] = compact('createdAt', 'deleteAt');
+        $this->commitments[$eventId][bin2hex(random_bytes(32))] = compact('createdAt', 'deleteAt');
     }
 
-    public function deleteCommitment(string $eventId, string $secretDigest): bool
+    public function removeAnyCommitment(string $eventId): bool
     {
-        $key = bin2hex($secretDigest);
-        if (!isset($this->commitments[$eventId][$key])) {
+        $key = array_key_first($this->commitments[$eventId] ?? []);
+        if ($key === null) {
             return false;
         }
 

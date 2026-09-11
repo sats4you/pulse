@@ -115,12 +115,10 @@ $attendanceService = new AttendanceService(
     $store,
     $policy,
     new RetentionSchedule(),
-    new SecretGenerator(),
-    $digester,
 );
 $application = new PulseApplicationFactory(
     new AccessExchange($store, $digester, new AccessSessionCodec(str_repeat('s', 32))),
-    new ParticipantFlow($store, $store, $attendanceService, $digester),
+    new ParticipantFlow($store, $attendanceService),
     new AdminEventService($store, new RetentionSchedule()),
     new CredentialRotationService($store, new SecretGenerator(), $digester),
     new BootstrapPage(),

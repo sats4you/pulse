@@ -78,21 +78,8 @@ final readonly class PdoAttendanceStore implements AttendanceStore
         );
     }
 
-    public function hasCommitment(string $eventId, string $secretDigest): bool
-    {
-        $statement = $this->connection->prepare(
-            'SELECT 1 FROM attendance_commitments WHERE event_id = UNHEX(:event_id) AND participant_secret_digest = :digest',
-        );
-        $statement->bindValue('event_id', self::normaliseId($eventId));
-        $statement->bindValue('digest', $secretDigest, PDO::PARAM_LOB);
-        $statement->execute();
-
-        return $statement->fetchColumn() !== false;
-    }
-
-    public function insertCommitment(
+    public function addCommitment(
         string $eventId,
-        string $secretDigest,
         DateTimeImmutable $createdAt,
         DateTimeImmutable $deleteAt,
     ): void {
@@ -106,19 +93,20 @@ final readonly class PdoAttendanceStore implements AttendanceStore
         );
         $statement->bindValue('id', random_bytes(16), PDO::PARAM_LOB);
         $statement->bindValue('event_id', self::normaliseId($eventId));
-        $statement->bindValue('digest', $secretDigest, PDO::PARAM_LOB);
+        // This is an opaque row value, generated server-side. It is not derived
+        // from a browser, person, or participant secret.
+        $statement->bindValue('digest', random_bytes(32), PDO::PARAM_LOB);
         $statement->bindValue('created_at', self::formatDate($createdAt));
         $statement->bindValue('delete_at', self::formatDate($deleteAt));
         $statement->execute();
     }
 
-    public function deleteCommitment(string $eventId, string $secretDigest): bool
+    public function removeAnyCommitment(string $eventId): bool
     {
         $statement = $this->connection->prepare(
-            'DELETE FROM attendance_commitments WHERE event_id = UNHEX(:event_id) AND participant_secret_digest = :digest',
+            'DELETE FROM attendance_commitments WHERE event_id = UNHEX(:event_id) ORDER BY created_at ASC, id ASC LIMIT 1',
         );
         $statement->bindValue('event_id', self::normaliseId($eventId));
-        $statement->bindValue('digest', $secretDigest, PDO::PARAM_LOB);
         $statement->execute();
 
         return $statement->rowCount() === 1;

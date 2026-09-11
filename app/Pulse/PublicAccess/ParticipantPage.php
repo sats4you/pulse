@@ -19,7 +19,6 @@ final readonly class ParticipantPage
 
     /**
      * @param list<PublishedEvent> $events
-     * @param array<string, bool> $joinedByPublicId
      * @param array<string, string> $languageNames
      */
     public function render(
@@ -28,7 +27,6 @@ final readonly class ParticipantPage
         string $groupName,
         string $publicSlug,
         array $events,
-        array $joinedByPublicId,
         array $languageNames,
         DateTimeImmutable $now,
     ): string {
@@ -49,8 +47,7 @@ final readonly class ParticipantPage
 
         $cards = '';
         foreach ($events as $event) {
-            $joined = $joinedByPublicId[$event->publicId] ?? false;
-            $cards .= $this->renderEvent($translator, $locale, $publicSlug, $event, $joined, $now);
+            $cards .= $this->renderEvent($translator, $locale, $publicSlug, $event, $now);
         }
         if ($cards === '') {
             $cards = '<p class="empty">' . $t('participant.empty') . '</p>';
@@ -66,7 +63,7 @@ final readonly class ParticipantPage
                 <meta name="robots" content="noindex,nofollow,noarchive">
                 <title>{$t('participant.heading')} · pulse</title>
                 <link rel="icon" href="/assets/sats4you-favicon.svg" type="image/svg+xml">
-                <link rel="stylesheet" href="/assets/pulse.css?v=20260816-group1">
+                <link rel="stylesheet" href="/assets/pulse.css?v=20260911-shared-count">
             </head>
             <body>
                 <main class="shell">
@@ -86,6 +83,7 @@ final readonly class ParticipantPage
                     <h1>{$t('participant.heading')}</h1>
                     <p class="lead">{$t('privacy.short')}</p>
                     <p><a class="privacy-link" href="/pulse/privacy?lang={$localeAttribute}">{$t('privacy.link')}</a></p>
+                    <p class="shared-rsvp-hint">{$t('rsvp.shared_hint')}</p>
                     <h2 class="section-title">{$t('participant.events')}</h2>
                     <div class="event-list">{$cards}</div>
                     <p class="footnote">{$t('pilot.label')} · {$t('participant.no_account')}</p>
@@ -102,7 +100,6 @@ final readonly class ParticipantPage
         string $locale,
         string $publicSlug,
         PublishedEvent $event,
-        bool $joined,
         DateTimeImmutable $now,
     ): string {
         $e = static fn (string $value): string => htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
@@ -133,20 +130,21 @@ final readonly class ParticipantPage
         $note = $event->note === null || trim($event->note) === ''
             ? ''
             : '<p class="event-note">' . nl2br($e($event->note)) . '</p>';
-        $includes = $joined ? '<p class="includes-you">' . $t('rsvp.count_includes_you') . '</p>' : '';
-        $action = '';
-        if ($joined && $this->accessPolicy->acceptsWithdrawal($event->timing, $now)) {
-            $action = $this->form($publicSlug, $event->publicId, 'withdraw', $t('rsvp.withdraw'), 'secondary', $locale);
-        } elseif (!$joined && $this->accessPolicy->acceptsNewRsvp(
+        $actions = '';
+        if ($this->accessPolicy->acceptsNewRsvp(
             $event->publicationState,
             $event->publishAt,
             $event->timing,
             $event->rsvpClosedAt,
             $now,
         )) {
-            $action = $this->form($publicSlug, $event->publicId, 'rsvp', $t('rsvp.join'), 'primary-button', $locale);
-        } elseif (!$joined) {
-            $action = '<p class="closed">' . $t('event.rsvp_closed') . '</p>';
+            $actions .= $this->form($publicSlug, $event->publicId, 'rsvp', $t('rsvp.join'), 'primary-button', $locale);
+        }
+        if ($event->attendanceCount > 0 && $this->accessPolicy->acceptsWithdrawal($event->timing, $now)) {
+            $actions .= $this->form($publicSlug, $event->publicId, 'withdraw', $t('rsvp.withdraw'), 'secondary', $locale);
+        }
+        if ($actions === '') {
+            $actions = '<p class="closed">' . $t('event.rsvp_closed') . '</p>';
         }
 
         return <<<HTML
@@ -160,8 +158,7 @@ final readonly class ParticipantPage
                     <div class="count"><strong>{$event->attendanceCount}</strong><span>{$count}</span></div>
                 </div>
                 {$note}
-                {$includes}
-                {$action}
+                <div class="rsvp-actions">{$actions}</div>
             </article>
             HTML;
     }

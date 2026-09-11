@@ -63,7 +63,8 @@ final class PulseApplicationFactoryTest extends TestCase
         );
         self::assertSame(200, $events->getStatusCode());
         self::assertStringContainsString('Bern Monthly Bitcoin Meetup', (string) $events->getBody());
-        self::assertStringContainsString('Ich bin dabei', (string) $events->getBody());
+        self::assertStringContainsString('Teilnahme hinzufügen', (string) $events->getBody());
+        self::assertStringContainsString('Teilnahme entfernen', (string) $events->getBody());
 
         $join = $app->handle(
             $requests->createServerRequest('POST', '/pulse/r/' . self::SLUG . '/events/' . self::PUBLIC_EVENT_ID . '/rsvp')
@@ -73,32 +74,23 @@ final class PulseApplicationFactoryTest extends TestCase
         );
         self::assertSame(303, $join->getStatusCode());
         self::assertSame('/pulse/r/' . self::SLUG . '/events?lang=de', $join->getHeaderLine('Location'));
-        $rsvpCookieName = 'pulse_rsvp_' . self::PUBLIC_EVENT_ID;
-        $rsvpCookie = $this->cookieValue($join, $rsvpCookieName);
         self::assertSame(5, $this->attendanceCount($connection));
 
         $joinedEvents = $app->handle(
             $requests->createServerRequest('GET', '/pulse/r/' . self::SLUG . '/events?lang=de')
                 ->withQueryParams(['lang' => 'de'])
-                ->withCookieParams([
-                    'pulse_access' => $accessCookie,
-                    $rsvpCookieName => $rsvpCookie,
-                ]),
+                ->withCookieParams(['pulse_access' => $accessCookie]),
         );
         self::assertStringContainsString('<strong>5</strong>', (string) $joinedEvents->getBody());
-        self::assertStringContainsString('Zusage zurückziehen', (string) $joinedEvents->getBody());
+        self::assertStringContainsString('Teilnahme entfernen', (string) $joinedEvents->getBody());
 
         $withdraw = $app->handle(
             $requests->createServerRequest('POST', '/pulse/r/' . self::SLUG . '/events/' . self::PUBLIC_EVENT_ID . '/withdraw')
                 ->withHeader('Sec-Fetch-Site', 'same-origin')
                 ->withParsedBody(['lang' => 'de'])
-                ->withCookieParams([
-                    'pulse_access' => $accessCookie,
-                    $rsvpCookieName => $rsvpCookie,
-                ]),
+                ->withCookieParams(['pulse_access' => $accessCookie]),
         );
         self::assertSame(303, $withdraw->getStatusCode());
-        self::assertStringContainsString('Max-Age=0', $withdraw->getHeaderLine('Set-Cookie'));
         self::assertSame(4, $this->attendanceCount($connection));
     }
 
@@ -585,13 +577,11 @@ final class PulseApplicationFactoryTest extends TestCase
             $store,
             $policy,
             new RetentionSchedule(),
-            new SecretGenerator(),
-            $digester,
         );
         $adminStore = new InMemoryAdminEventStore();
         $factory = new PulseApplicationFactory(
             new AccessExchange($store, $digester, new AccessSessionCodec(str_repeat('s', 32))),
-            new ParticipantFlow($store, $store, $attendanceService, $digester),
+            new ParticipantFlow($store, $attendanceService),
             new AdminEventService($adminStore, new RetentionSchedule()),
             new CredentialRotationService($store, new SecretGenerator(), $digester),
             new BootstrapPage(),
