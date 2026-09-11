@@ -22,7 +22,6 @@ final class ParticipantPageTest extends TestCase
             'Bern Monthly Bitcoin Meetup',
             'bern-bitcoin',
             [],
-            [],
             [
                 'de' => 'Deutsch',
                 'fr' => 'Français',
